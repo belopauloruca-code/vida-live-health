@@ -86,12 +86,28 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Hero Cover Section */}
+      <div 
+        className="relative h-48 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2)), url('/lovable-uploads/6adff54d-a871-4013-b61d-151fd65d71ca.png')`
+        }}
+      >
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-white">
+            <h1 className="text-3xl font-bold mb-2">Vida Live</h1>
+            <p className="text-lg opacity-90">Sua jornada de saúde começa aqui</p>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
           <BrandHeader 
             title={`Olá, ${profile?.name || 'Usuário'}!`}
             subtitle="Como está sua jornada hoje?"
+            showLogo={false}
           />
         </div>
         

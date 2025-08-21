@@ -32,6 +32,9 @@ export const ExercisesPage: React.FC = () => {
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [selectedVideoExercise, setSelectedVideoExercise] = useState<Exercise | null>(null);
+  const [isGeneratingDemo, setIsGeneratingDemo] = useState(false);
+  const [demoImages, setDemoImages] = useState<string[]>([]);
+  const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
 
   useEffect(() => {
     loadExercises();
@@ -131,8 +134,44 @@ export const ExercisesPage: React.FC = () => {
   };
 
   const openVideoDialog = (exercise: Exercise) => {
-    if (exercise.video_url) {
-      setSelectedVideoExercise(exercise);
+    setSelectedVideoExercise(exercise);
+    setDemoImages([]);
+    setCurrentDemoIndex(0);
+  };
+
+  const generateAIDemo = async () => {
+    if (!selectedVideoExercise) return;
+    
+    setIsGeneratingDemo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-exercise-demo', {
+        body: { exerciseName: selectedVideoExercise.title }
+      });
+
+      if (error) throw error;
+      
+      setDemoImages(data.images || []);
+      setCurrentDemoIndex(0);
+      
+      // Auto-advance slideshow
+      const interval = setInterval(() => {
+        setCurrentDemoIndex(prev => (prev + 1) % (data.images?.length || 1));
+      }, 1500);
+
+      setTimeout(() => clearInterval(interval), 15000); // Stop after 15s
+      
+      toast({
+        title: "Demo IA gerada!",
+        description: "Demonstração criada com sucesso"
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Falha ao gerar demonstração IA"
+      });
+    } finally {
+      setIsGeneratingDemo(false);
     }
   };
 
@@ -279,120 +318,202 @@ export const ExercisesPage: React.FC = () => {
 
         {/* Video Dialog */}
         <Dialog open={!!selectedVideoExercise} onOpenChange={() => setSelectedVideoExercise(null)}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{selectedVideoExercise?.title}</DialogTitle>
-              <DialogDescription>
-                Vídeo demonstrativo do exercício
-              </DialogDescription>
             </DialogHeader>
-            {selectedVideoExercise?.video_url && (() => {
-              const source = getEmbedSource(selectedVideoExercise.video_url);
-              
-              // Special case for "Flexões + Prancha" with local videos
-              if (selectedVideoExercise.title === 'Flexões + Prancha') {
-                return (
-                  <div className="space-y-4">
-                    <Tabs defaultValue="flexoes" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="flexoes">Flexões</TabsTrigger>
-                        <TabsTrigger value="prancha">Prancha</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="flexoes">
-                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+            {selectedVideoExercise && (
+              <Tabs defaultValue="video" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="video">Vídeo</TabsTrigger>
+                  <TabsTrigger value="ai-demo">Demo IA</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="video" className="space-y-4">
+                  {(() => {
+                    const source = getEmbedSource(selectedVideoExercise.video_url || '');
+                    
+                    // Special case for "Flexões + Prancha"
+                    if (selectedVideoExercise.title === 'Flexões + Prancha') {
+                      return (
+                        <Tabs defaultValue="flexoes" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="flexoes">Flexões</TabsTrigger>
+                            <TabsTrigger value="prancha">Prancha</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="flexoes" className="space-y-4">
+                            <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                              <video
+                                controls
+                                className="w-full h-full object-cover"
+                                poster="/api/placeholder/640/360"
+                                preload="metadata"
+                              >
+                                <source src="/videos/flexoes-demo.mp4" type="video/mp4" />
+                                Seu navegador não suporta vídeos.
+                              </video>
+                            </div>
+                            {selectedVideoExercise.video_url && (
+                              <Button
+                                variant="outline"
+                                onClick={() => window.open(selectedVideoExercise.video_url, '_blank')}
+                                className="w-full"
+                              >
+                                Abrir no YouTube
+                              </Button>
+                            )}
+                          </TabsContent>
+                          <TabsContent value="prancha" className="space-y-4">
+                            <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                              <video
+                                controls
+                                className="w-full h-full object-cover"
+                                poster="/api/placeholder/640/360"
+                                preload="metadata"
+                              >
+                                <source src="/videos/prancha-demo.mp4" type="video/mp4" />
+                                Seu navegador não suporta vídeos.
+                              </video>
+                            </div>
+                            {selectedVideoExercise.video_url && (
+                              <Button
+                                variant="outline"
+                                onClick={() => window.open(selectedVideoExercise.video_url, '_blank')}
+                                className="w-full"
+                              >
+                                Abrir no YouTube
+                              </Button>
+                            )}
+                          </TabsContent>
+                        </Tabs>
+                      );
+                    }
+                    
+                    // Regular video handling
+                    if (source.type === 'file') {
+                      return (
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                          <video
+                            controls
+                            className="w-full h-full object-cover"
+                            poster="/api/placeholder/640/360"
+                            preload="metadata"
+                          >
+                            <source src={source.src} type="video/mp4" />
+                            Seu navegador não suporta vídeos.
+                          </video>
+                        </div>
+                      );
+                    } else if (source.type === 'youtube' || source.type === 'vimeo') {
+                      return (
+                        <div className="space-y-4">
+                          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                            <iframe
+                              src={source.src}
+                              className="w-full h-full"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              referrerPolicy="strict-origin-when-cross-origin"
+                              allowFullScreen
+                            />
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={() => window.open(source.originalUrl, '_blank')}
+                            className="w-full"
+                          >
+                            Abrir no {source.type === 'youtube' ? 'YouTube' : 'Vimeo'}
+                          </Button>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="space-y-4">
+                          <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                            <p className="text-gray-500">Este vídeo bloqueia incorporação</p>
+                          </div>
+                          {selectedVideoExercise.video_url && (
+                            <Button
+                              variant="outline"
+                              onClick={() => window.open(selectedVideoExercise.video_url, '_blank')}
+                              className="w-full"
+                            >
+                              Abrir no YouTube
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    }
+                  })()}
+                </TabsContent>
+                
+                <TabsContent value="ai-demo" className="space-y-4">
+                  <div className="text-center space-y-4">
+                    {demoImages.length === 0 ? (
+                      <div className="space-y-4">
+                        <div className="aspect-video bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg flex items-center justify-center">
                           <div className="text-center">
-                            <Video className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                            <p className="text-gray-500">Vídeo de demonstração - Flexões</p>
-                            <p className="text-sm text-gray-400 mt-1">Em breve disponível</p>
+                            <div className="text-4xl mb-2">🤖</div>
+                            <h3 className="font-semibold text-gray-800">Demo com IA</h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Gere uma demonstração visual do exercício usando inteligência artificial
+                            </p>
                           </div>
                         </div>
-                      </TabsContent>
-                      <TabsContent value="prancha">
-                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <Video className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                            <p className="text-gray-500">Vídeo de demonstração - Prancha</p>
-                            <p className="text-sm text-gray-400 mt-1">Em breve disponível</p>
-                          </div>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-                    {source.originalUrl && (
-                      <div className="flex justify-center">
                         <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => window.open(source.originalUrl, '_blank')}
+                          onClick={generateAIDemo}
+                          disabled={isGeneratingDemo}
+                          className="w-full"
                         >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Abrir no YouTube
+                          {isGeneratingDemo ? "Gerando Demo..." : "Gerar Demo IA"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
+                          <img
+                            src={demoImages[currentDemoIndex]}
+                            alt={`Demo ${selectedVideoExercise.title} - Frame ${currentDemoIndex + 1}`}
+                            className="w-full h-full object-cover transition-opacity duration-300"
+                          />
+                          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                            {demoImages.map((_, index) => (
+                              <div
+                                key={index}
+                                className={`w-2 h-2 rounded-full transition-colors ${
+                                  index === currentDemoIndex ? 'bg-white' : 'bg-white/50'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentDemoIndex(prev => (prev - 1 + demoImages.length) % demoImages.length)}
+                          >
+                            Anterior
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentDemoIndex(prev => (prev + 1) % demoImages.length)}
+                          >
+                            Próximo
+                          </Button>
+                        </div>
+                        <Button 
+                          variant="secondary"
+                          onClick={generateAIDemo}
+                          disabled={isGeneratingDemo}
+                          className="w-full"
+                        >
+                          {isGeneratingDemo ? "Gerando Nova Demo..." : "Gerar Nova Demo"}
                         </Button>
                       </div>
                     )}
                   </div>
-                );
-              }
-              
-              // Handle different video types
-              if (source.type === 'file') {
-                return (
-                  <div className="aspect-video">
-                    <video
-                      controls
-                      className="w-full h-full rounded-lg"
-                      preload="metadata"
-                    >
-                      <source src={source.src} type="video/mp4" />
-                      Seu navegador não suporta o elemento de vídeo.
-                    </video>
-                  </div>
-                );
-              } else if (source.type === 'youtube' || source.type === 'vimeo') {
-                return (
-                  <div className="space-y-4">
-                    <div className="aspect-video">
-                      <iframe
-                        src={source.src}
-                        title={`Vídeo: ${selectedVideoExercise.title}`}
-                        className="w-full h-full rounded-lg"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerPolicy="strict-origin-when-cross-origin"
-                        allowFullScreen
-                      />
-                    </div>
-                    {source.originalUrl && (
-                      <div className="flex justify-center">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => window.open(source.originalUrl, '_blank')}
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Abrir no {source.type === 'youtube' ? 'YouTube' : 'Vimeo'}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                );
-              } else {
-                return (
-                  <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <Video className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                      <p className="text-gray-500 mb-2">Este vídeo não pode ser incorporado</p>
-                      <Button 
-                        variant="outline"
-                        onClick={() => window.open(source.originalUrl, '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Abrir no navegador
-                      </Button>
-                    </div>
-                  </div>
-                );
-              }
-            })()}
+                </TabsContent>
+              </Tabs>
+            )}
           </DialogContent>
         </Dialog>
       </div>
