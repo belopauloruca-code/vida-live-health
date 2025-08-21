@@ -18,51 +18,54 @@ import { pt } from 'date-fns/locale';
 export const MealPlansPage: React.FC = () => {
   const navigate = useNavigate();
   const {
-    weekMeals,
-    isGenerating,
-    selectedDate,
-    mealPlanDates,
-    generateWeeklyMealPlan,
-    loadMealPlanForWeek,
-    loadMealPlanDates,
-    setSelectedDate,
-    getWeekStartDate,
-    getDayOfWeek,
+    recipes,
+    currentPlan,
+    planItems,
+    loading,
+    generating,
+    generateMealPlan,
+    loadCurrentPlan
   } = useEnhancedMealPlan();
   const { hasPremiumAccess } = usePremiumAccess();
   
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const mealTypes = ['Café', 'Almoço', 'Lanche', 'Jantar'];
 
   useEffect(() => {
-    loadMealPlanDates();
-    loadMealPlanForWeek(selectedDate);
+    loadCurrentPlan();
   }, []);
-
-  useEffect(() => {
-    loadMealPlanForWeek(selectedDate);
-  }, [selectedDate]);
 
   const handleViewRecipe = (recipe: any) => {
     setSelectedRecipe(recipe);
     setIsRecipeDialogOpen(true);
   };
 
-  const getMealsForDay = (day: string) => {
-    return weekMeals[day] || [];
+  const getMealsForDay = (dayIndex: number) => {
+    return planItems.filter(item => item.day_index === dayIndex);
   };
 
   const handleGeneratePlan = () => {
-    const weekStart = getWeekStartDate(selectedDate);
-    generateWeeklyMealPlan(weekStart);
+    generateMealPlan(1800, 7); // 1800 kcal por 7 dias
   };
 
-  const isDateWithPlan = (date: Date) => {
-    return mealPlanDates.some(planDate => 
-      planDate.toDateString() === date.toDateString()
-    );
+  const getWeekStartDate = (date: Date) => {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is sunday
+    return new Date(start.setDate(diff));
+  };
+
+  const formatDateRange = () => {
+    if (!currentPlan) return 'Nenhum plano selecionado';
+    
+    const startDate = new Date(currentPlan.start_date);
+    const endDate = new Date(currentPlan.end_date);
+    
+    return `${format(startDate, 'dd/MM', { locale: pt })} - ${format(endDate, 'dd/MM/yyyy', { locale: pt })}`;
   };
 
   return (
@@ -84,20 +87,21 @@ export const MealPlansPage: React.FC = () => {
           <CardHeader>
             <div className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5 text-primary" />
-              <CardTitle>Selecione uma Semana</CardTitle>
+              <CardTitle>Plano Atual</CardTitle>
             </div>
             <CardDescription>
-              Escolha uma data para visualizar ou gerar o plano semanal
+              {currentPlan ? `Plano ativo: ${formatDateRange()}` : 'Nenhum plano ativo'}
             </CardDescription>
           </CardHeader>
+          <CardContent>
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
               modifiers={{
-                hasPlan: (date) => mealPlanDates.some(planDate => 
-                  planDate.toDateString() === date.toDateString()
-                )
+                hasPlan: (date) => currentPlan && 
+                  date >= new Date(currentPlan.start_date) && 
+                  date <= new Date(currentPlan.end_date)
               }}
               modifiersStyles={{
                 hasPlan: { 
@@ -109,9 +113,6 @@ export const MealPlansPage: React.FC = () => {
               className="rounded-md border w-fit mx-auto"
             />
             <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground mb-2">
-                Semana selecionada: {format(getWeekStartDate(selectedDate), 'dd/MM', { locale: pt })} - {format(new Date(getWeekStartDate(selectedDate).getTime() + 6 * 24 * 60 * 60 * 1000), 'dd/MM/yyyy', { locale: pt })}
-              </p>
               <div className="flex items-center justify-center gap-4 text-xs">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded bg-primary"></div>
@@ -123,6 +124,7 @@ export const MealPlansPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </CardContent>
         </Card>
 
         {/* Plan Summary */}
@@ -133,7 +135,7 @@ export const MealPlansPage: React.FC = () => {
               <CardTitle className="text-primary">Plano Semanal</CardTitle>
             </div>
             <CardDescription>
-              Meta: 1.800 kcal/dia • 4 refeições • 7 dias
+              Meta: {currentPlan?.daily_kcal || 1800} kcal/dia • {currentPlan?.meals_per_day || 4} refeições • 7 dias
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -141,10 +143,10 @@ export const MealPlansPage: React.FC = () => {
               <Button 
                 className="w-full"
                 onClick={handleGeneratePlan}
-                disabled={isGenerating || !hasPremiumAccess}
+                disabled={generating || !hasPremiumAccess}
                 variant={!hasPremiumAccess ? "outline" : "default"}
               >
-                {isGenerating ? (
+                {generating ? (
                   <>
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
                     Gerando plano...
@@ -152,7 +154,7 @@ export const MealPlansPage: React.FC = () => {
                 ) : (
                   <>
                     {!hasPremiumAccess && <Crown className="w-4 h-4 mr-2" />}
-                    {!hasPremiumAccess ? 'Premium Necessário' : 'Gerar Plano da Semana'}
+                    {!hasPremiumAccess ? 'Premium Necessário' : 'Gerar Novo Plano Semanal'}
                   </>
                 )}
               </Button>
@@ -177,70 +179,84 @@ export const MealPlansPage: React.FC = () => {
         </Card>
 
         {/* Weekly Tabs */}
-        <Tabs defaultValue="Seg" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-4">
-            {weekDays.map((day) => (
-              <TabsTrigger key={day} value={day} className="text-xs">
-                {day}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        {currentPlan && planItems.length > 0 ? (
+          <Tabs defaultValue="0" className="w-full">
+            <TabsList className="grid w-full grid-cols-7 mb-4">
+              {weekDays.map((day, index) => (
+                <TabsTrigger key={index} value={index.toString()} className="text-xs">
+                  {day}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          {weekDays.map((day) => (
-            <TabsContent key={day} value={day}>
-              <div className="space-y-4">
-                {getMealsForDay(day).length > 0 ? (
-                  getMealsForDay(day).map((mealItem, index) => (
-                    <Card key={index} className="border-gray-200">
-                      <CardHeader className="pb-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">{mealItem.recipe.title}</CardTitle>
-                            <CardDescription className="text-sm font-medium text-green-600">
-                              {mealItem.meal_type}
-                            </CardDescription>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center text-sm text-gray-500 mb-1">
-                              <Zap className="h-4 w-4 mr-1" />
-                              {mealItem.recipe.kcal} kcal
+            {weekDays.map((day, dayIndex) => (
+              <TabsContent key={dayIndex} value={dayIndex.toString()}>
+                <div className="space-y-4">
+                  {getMealsForDay(dayIndex).length > 0 ? (
+                    getMealsForDay(dayIndex).map((mealItem, index) => (
+                      <Card key={index} className="border-gray-200">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg">{mealItem.recipe?.title || 'Receita não encontrada'}</CardTitle>
+                              <CardDescription className="text-sm font-medium text-green-600">
+                                {mealItem.meal_type}
+                              </CardDescription>
                             </div>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Clock className="h-4 w-4 mr-1" />
-                              {mealItem.recipe.duration_min} min
-                            </div>
+                            {mealItem.recipe && (
+                              <div className="text-right">
+                                <div className="flex items-center text-sm text-gray-500 mb-1">
+                                  <Zap className="h-4 w-4 mr-1" />
+                                  {mealItem.recipe.kcal} kcal
+                                </div>
+                                <div className="flex items-center text-sm text-gray-500">
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  {mealItem.recipe.duration_min} min
+                                </div>
+                              </div>
+                            )}
                           </div>
+                        </CardHeader>
+                        {mealItem.recipe && (
+                          <CardContent>
+                            <p className="text-sm text-gray-600 mb-3">
+                              <strong>Ingredientes:</strong> {mealItem.recipe.ingredients}
+                            </p>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleViewRecipe(mealItem.recipe)}
+                            >
+                              Ver Receita
+                            </Button>
+                          </CardContent>
+                        )}
+                      </Card>
+                    ))
+                  ) : (
+                    <Card className="border-border">
+                      <CardContent className="pt-6">
+                        <div className="text-center text-muted-foreground">
+                          <p>Nenhuma refeição planejada para {day}.</p>
+                          <p className="text-sm mt-2">Gere um novo plano para ver as refeições!</p>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-600 mb-3">
-                          <strong>Ingredientes:</strong> {mealItem.recipe.ingredients}
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewRecipe(mealItem.recipe)}
-                        >
-                          Ver Receita
-                        </Button>
                       </CardContent>
                     </Card>
-                  ))
-                ) : (
-                  <Card className="border-border">
-                    <CardContent className="pt-6">
-                      <div className="text-center text-muted-foreground">
-                        <p>Nenhum plano gerado para esta semana.</p>
-                        <p className="text-sm mt-2">Use o calendário para selecionar uma semana e gerar um novo plano!</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                  )}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        ) : (
+          <Card className="border-border">
+            <CardContent className="pt-6">
+              <div className="text-center text-muted-foreground">
+                <p className="text-lg mb-2">Nenhum plano de refeições ativo</p>
+                <p className="text-sm">Gere um plano semanal para começar a planejar suas refeições!</p>
               </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <RecipeDialog
