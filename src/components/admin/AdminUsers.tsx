@@ -33,12 +33,7 @@ export const AdminUsers: React.FC = () => {
       // Get profiles with user data
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          name,
-          role,
-          created_at
-        `)
+        .select('id, name, role, created_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -37,7 +37,12 @@ export const AdminSubscriptions: React.FC = () => {
       const { data: subscriptions, error } = await supabase
         .from('subscriptions')
         .select(`
-          *,
+          id,
+          user_id,
+          product_id,
+          status,
+          started_at,
+          expires_at,
           profiles:user_id (
             name,
             id
@@ -52,9 +57,10 @@ export const AdminSubscriptions: React.FC = () => {
       
       const mergedData = subscriptions?.map(sub => {
         const authUser = authUsers?.users.find(u => u.id === sub.user_id);
+        const profile = sub.profiles as any;
         return {
           ...sub,
-          user_name: (sub.profiles as any)?.name || 'Sem nome',
+          user_name: profile?.name || 'Sem nome',
           user_email: authUser?.email || 'N/A',
         };
       }) || [];
