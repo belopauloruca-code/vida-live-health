@@ -1,5 +1,5 @@
 export interface VideoSource {
-  type: 'youtube' | 'vimeo' | 'file' | 'unknown';
+  type: 'youtube' | 'vimeo' | 'file' | 'gdrive' | 'unknown';
   src: string;
   originalUrl?: string;
 }
@@ -30,6 +30,27 @@ export function getEmbedSource(url: string): VideoSource {
     return {
       type: 'vimeo',
       src: `https://player.vimeo.com/video/${id}`,
+      originalUrl: url,
+    };
+  }
+
+  // Google Drive
+  const gdriveViewMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view/);
+  if (gdriveViewMatch?.[1]) {
+    const id = gdriveViewMatch[1];
+    return {
+      type: 'gdrive',
+      src: `https://drive.google.com/file/d/${id}/preview`,
+      originalUrl: url,
+    };
+  }
+
+  const gdriveOpenMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if (gdriveOpenMatch?.[1]) {
+    const id = gdriveOpenMatch[1];
+    return {
+      type: 'gdrive',
+      src: `https://drive.google.com/file/d/${id}/preview`,
       originalUrl: url,
     };
   }

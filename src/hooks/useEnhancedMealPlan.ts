@@ -139,7 +139,10 @@ export const useEnhancedMealPlan = () => {
         .order('created_at', { ascending: false })
         .limit(1);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error loading meal plan:', error);
+        throw error;
+      }
 
       if (plans && plans.length > 0) {
         const plan = plans[0];
@@ -151,9 +154,10 @@ export const useEnhancedMealPlan = () => {
       }
     } catch (error) {
       console.error('Error loading meal plan:', error);
+      const errorMessage = error instanceof Error ? error.message : "Tente recarregar a página.";
       toast({
         title: "Erro ao carregar plano",
-        description: "Tente recarregar a página.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -172,15 +176,19 @@ export const useEnhancedMealPlan = () => {
         .eq('meal_plan_id', planId)
         .order('day_index', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error loading plan items:', error);
+        throw error;
+      }
 
       console.log('Loaded plan items:', items);
       setPlanItems(items || []);
     } catch (error) {
       console.error('Error loading plan items:', error);
+      const errorMessage = error instanceof Error ? error.message : "Tente recarregar a página.";
       toast({
         title: "Erro ao carregar itens do plano",
-        description: "Tente recarregar a página.",
+        description: errorMessage,
         variant: "destructive",
       });
     }

@@ -404,7 +404,7 @@ export const ExercisesPage: React.FC = () => {
                           </video>
                         </div>
                       );
-                    } else if (source.type === 'youtube' || source.type === 'vimeo') {
+                    } else if (source.type === 'youtube' || source.type === 'vimeo' || source.type === 'gdrive') {
                       return (
                         <div className="space-y-4">
                           <div className="aspect-video bg-black rounded-lg overflow-hidden">
@@ -421,7 +421,7 @@ export const ExercisesPage: React.FC = () => {
                             onClick={() => window.open(source.originalUrl, '_blank')}
                             className="w-full"
                           >
-                            Abrir no {source.type === 'youtube' ? 'YouTube' : 'Vimeo'}
+                            Abrir no {source.type === 'youtube' ? 'YouTube' : source.type === 'vimeo' ? 'Vimeo' : 'Google Drive'}
                           </Button>
                         </div>
                       );
