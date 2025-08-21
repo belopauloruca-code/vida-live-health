@@ -444,16 +444,16 @@ export const AdminContent: React.FC = () => {
                 <div>
                   <Label htmlFor="exercise-video" className="flex items-center gap-2">
                     <Video className="h-4 w-4" />
-                    URL do Vídeo (YouTube Embed)
+                    URL do Vídeo
                   </Label>
                   <Input
                     id="exercise-video"
                     value={exerciseForm.video_url}
                     onChange={(e) => setExerciseForm(prev => ({ ...prev, video_url: e.target.value }))}
-                    placeholder="https://www.youtube.com/embed/VIDEO_ID"
+                    placeholder="YouTube, Vimeo ou MP4 URL"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Use o formato de embed do YouTube: https://www.youtube.com/embed/VIDEO_ID
+                    Aceita: YouTube (watch ou youtu.be), Vimeo, ou MP4 direto
                   </p>
                 </div>
 

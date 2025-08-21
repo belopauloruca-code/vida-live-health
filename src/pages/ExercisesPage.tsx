@@ -7,10 +7,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Clock, Zap, Play, Target, Activity, Video } from 'lucide-react';
+import { Clock, Zap, Play, Target, Activity, Video, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { getEmbedSource } from '@/utils/videoUtils';
 
 interface Exercise {
   id: string;
@@ -285,17 +286,113 @@ export const ExercisesPage: React.FC = () => {
                 Vídeo demonstrativo do exercício
               </DialogDescription>
             </DialogHeader>
-            {selectedVideoExercise?.video_url && (
-              <div className="aspect-video">
-                <iframe
-                  src={selectedVideoExercise.video_url}
-                  title={`Vídeo: ${selectedVideoExercise.title}`}
-                  className="w-full h-full rounded-lg"
-                  frameBorder="0"
-                  allowFullScreen
-                />
-              </div>
-            )}
+            {selectedVideoExercise?.video_url && (() => {
+              const source = getEmbedSource(selectedVideoExercise.video_url);
+              
+              // Special case for "Flexões + Prancha" with local videos
+              if (selectedVideoExercise.title === 'Flexões + Prancha') {
+                return (
+                  <div className="space-y-4">
+                    <Tabs defaultValue="flexoes" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="flexoes">Flexões</TabsTrigger>
+                        <TabsTrigger value="prancha">Prancha</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="flexoes">
+                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                          <div className="text-center">
+                            <Video className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                            <p className="text-gray-500">Vídeo de demonstração - Flexões</p>
+                            <p className="text-sm text-gray-400 mt-1">Em breve disponível</p>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="prancha">
+                        <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                          <div className="text-center">
+                            <Video className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                            <p className="text-gray-500">Vídeo de demonstração - Prancha</p>
+                            <p className="text-sm text-gray-400 mt-1">Em breve disponível</p>
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                    {source.originalUrl && (
+                      <div className="flex justify-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(source.originalUrl, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Abrir no YouTube
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              
+              // Handle different video types
+              if (source.type === 'file') {
+                return (
+                  <div className="aspect-video">
+                    <video
+                      controls
+                      className="w-full h-full rounded-lg"
+                      preload="metadata"
+                    >
+                      <source src={source.src} type="video/mp4" />
+                      Seu navegador não suporta o elemento de vídeo.
+                    </video>
+                  </div>
+                );
+              } else if (source.type === 'youtube' || source.type === 'vimeo') {
+                return (
+                  <div className="space-y-4">
+                    <div className="aspect-video">
+                      <iframe
+                        src={source.src}
+                        title={`Vídeo: ${selectedVideoExercise.title}`}
+                        className="w-full h-full rounded-lg"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    </div>
+                    {source.originalUrl && (
+                      <div className="flex justify-center">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => window.open(source.originalUrl, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Abrir no {source.type === 'youtube' ? 'YouTube' : 'Vimeo'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              } else {
+                return (
+                  <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <Video className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-500 mb-2">Este vídeo não pode ser incorporado</p>
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.open(source.originalUrl, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir no navegador
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+            })()}
           </DialogContent>
         </Dialog>
       </div>

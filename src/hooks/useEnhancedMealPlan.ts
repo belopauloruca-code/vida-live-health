@@ -282,14 +282,9 @@ export const useEnhancedMealPlan = () => {
       }
 
       // Show success message
-      let successMessage = "Plano de refeições gerado com sucesso!";
-      if (repeatedRecipeCount > 0) {
-        successMessage += ` (${repeatedRecipeCount} receitas foram repetidas devido à disponibilidade limitada)`;
-      }
-
       toast({
-        title: "Sucesso!",
-        description: successMessage,
+        title: "Plano Gerado! 🎉",
+        description: "Seu novo plano semanal está pronto!",
       });
 
       // Reload the current plan
