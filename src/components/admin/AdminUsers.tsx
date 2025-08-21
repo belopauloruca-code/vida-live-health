@@ -38,35 +38,18 @@ export const AdminUsers: React.FC = () => {
 
       if (error) throw error;
 
-      // Get auth users to get email and last sign in
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      // For now, just use profile data without auth admin access
+      // In production, you'd need proper admin access or backend function
+      const mergedUsers = profiles?.map(profile => ({
+        id: profile.id,
+        name: profile.name || 'Sem nome',
+        email: 'contato@vidalive.app', // Placeholder since we can't access auth admin
+        role: profile.role || 'user',
+        created_at: profile.created_at,
+        last_sign_in_at: undefined,
+      })) || [];
       
-      if (authError) {
-        console.error('Error loading auth users:', authError);
-        // Continue with profile data only
-        setUsers(profiles?.map(profile => ({
-          id: profile.id,
-          name: profile.name,
-          email: 'N/A',
-          role: profile.role,
-          created_at: profile.created_at,
-        })) || []);
-      } else {
-        // Merge profile and auth data
-        const mergedUsers = profiles?.map(profile => {
-          const authUser = authUsers.users.find(u => u.id === profile.id);
-          return {
-            id: profile.id,
-            name: profile.name,
-            email: authUser?.email || 'N/A',
-            role: profile.role,
-            created_at: profile.created_at,
-            last_sign_in_at: authUser?.last_sign_in_at,
-          };
-        }) || [];
-        
-        setUsers(mergedUsers);
-      }
+      setUsers(mergedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
       toast({

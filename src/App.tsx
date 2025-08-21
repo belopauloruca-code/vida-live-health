@@ -15,6 +15,9 @@ import { DownloadAppPage } from '@/pages/DownloadAppPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { AIAssistantPage } from '@/pages/AIAssistantPage';
+import { PaymentPage } from '@/pages/PaymentPage';
+import { PaymentSuccessPage } from '@/pages/PaymentSuccessPage';
+import { SubscriptionPlanPage } from '@/pages/SubscriptionPlanPage';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import './App.css';
 
@@ -31,6 +34,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/admin-login" element={<AdminLoginPage />} />
               
               {/* Protected user routes */}
@@ -41,6 +46,7 @@ function App() {
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistantPage /></ProtectedRoute>} />
+              <Route path="/subscription" element={<ProtectedRoute><SubscriptionPlanPage /></ProtectedRoute>} />
               
               {/* Admin routes */}
               <Route path="/admin/*" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />

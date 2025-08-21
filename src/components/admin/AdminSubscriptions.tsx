@@ -52,16 +52,13 @@ export const AdminSubscriptions: React.FC = () => {
 
       if (error) throw error;
 
-      // Get auth users for email data
-      const { data: authUsers } = await supabase.auth.admin.listUsers();
-      
+      // For now, just use profile data without auth admin access
       const mergedData = subscriptions?.map(sub => {
-        const authUser = authUsers?.users.find(u => u.id === sub.user_id);
         const profile = sub.profiles as any;
         return {
           ...sub,
           user_name: profile?.name || 'Sem nome',
-          user_email: authUser?.email || 'N/A',
+          user_email: 'contato@vidalive.app', // Placeholder since we can't access auth admin
         };
       }) || [];
 

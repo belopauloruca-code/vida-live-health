@@ -9,7 +9,7 @@ export const BottomNavigation: React.FC = () => {
 
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
-    { icon: Calendar, label: 'Planos', path: '/meal-plans' },
+    { icon: Calendar, label: 'Ver Plano', path: '/subscription' },
     { icon: Activity, label: 'Exercícios', path: '/exercises' },
     { icon: MessageCircle, label: 'Dr. Ajuda', path: '/ai-assistant' },
     { icon: Download, label: 'App', path: '/download-app' },

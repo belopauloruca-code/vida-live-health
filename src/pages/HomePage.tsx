@@ -58,7 +58,7 @@ export const HomePage: React.FC = () => {
             <Button 
               size="lg" 
               className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 text-lg"
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/payment')}
             >
               Assinar plano — €5/mês
             </Button>
@@ -69,6 +69,26 @@ export const HomePage: React.FC = () => {
               onClick={() => navigate('/login')}
             >
               Entrar / Criar conta
+            </Button>
+          </div>
+
+          {/* Download App Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              onClick={() => window.open('https://play.google.com/store/apps', '_blank')}
+            >
+              📱 Baixar para Android
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              onClick={() => window.open('https://apps.apple.com/app', '_blank')}
+            >
+              🍎 Baixar para iOS
             </Button>
           </div>
         </div>

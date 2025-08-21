@@ -25,6 +25,7 @@ export const RegisterPage: React.FC = () => {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             name,
           },
@@ -34,11 +35,14 @@ export const RegisterPage: React.FC = () => {
       if (error) throw error;
 
       toast({
-        title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao Vida Live! Você já pode começar a usar o app.",
+        title: "Conta criada!",
+        description: "Redirecionando para o pagamento...",
       });
       
-      navigate('/dashboard');
+      // Redirect to payment page after successful registration
+      setTimeout(() => {
+        navigate('/payment');
+      }, 1500);
     } catch (error: any) {
       toast({
         variant: "destructive",
