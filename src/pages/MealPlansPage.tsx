@@ -90,7 +90,6 @@ export const MealPlansPage: React.FC = () => {
               Escolha uma data para visualizar ou gerar o plano semanal
             </CardDescription>
           </CardHeader>
-          <CardContent>
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -124,7 +123,6 @@ export const MealPlansPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </CardContent>
         </Card>
 
         {/* Plan Summary */}
