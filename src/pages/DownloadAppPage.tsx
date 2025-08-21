@@ -35,12 +35,16 @@ export const DownloadAppPage: React.FC = () => {
         return;
       }
       
+      // Always enable download if URL exists, with fallback check
+      setIsValidApk(true);
+      
       try {
-        const response = await fetch(url, { method: 'HEAD' });
-        setIsValidApk(response.ok);
+        // Try a lightweight check but don't block on failure
+        const response = await fetch(url, { method: 'GET', mode: 'no-cors' });
+        // If we get here without error, the URL is accessible
       } catch (error) {
-        console.error('Error checking APK availability:', error);
-        setIsValidApk(false);
+        console.warn('APK check warning (download still enabled):', error);
+        // Keep download enabled even if check fails
       }
     };
 

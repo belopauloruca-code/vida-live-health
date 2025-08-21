@@ -13,12 +13,22 @@ const sizeClasses = {
 };
 
 export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
+  // Try multiple logo sources with fallbacks
+  const logoSrc = "/lovable-uploads/575dbbf3-5c0e-449f-ae3d-e65212364fb9.png";
+  const fallbackSrc = "/pwa-192x192.png";
+  
   return (
     <img
-      src="/lovable-uploads/575dbbf3-5c0e-449f-ae3d-e65212364fb9.png"
+      src={logoSrc}
       alt="Vida Live"
       className={`${sizeClasses[size]} object-contain ${className}`}
       loading="lazy"
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        if (target.src !== fallbackSrc) {
+          target.src = fallbackSrc;
+        }
+      }}
     />
   );
 };
