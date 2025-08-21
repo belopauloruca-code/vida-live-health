@@ -9,11 +9,14 @@ import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { Clock, Zap, Calendar as CalendarIcon, Crown } from 'lucide-react';
 import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { useNavigate } from 'react-router-dom';
 import { RecipeDialog } from '@/components/meal-plans/RecipeDialog';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 export const MealPlansPage: React.FC = () => {
+  const navigate = useNavigate();
   const {
     weekMeals,
     isGenerating,
@@ -25,9 +28,8 @@ export const MealPlansPage: React.FC = () => {
     setSelectedDate,
     getWeekStartDate,
     getDayOfWeek,
-    checkPremiumAccess,
-    isTrialExpired,
   } = useEnhancedMealPlan();
+  const { hasPremiumAccess } = usePremiumAccess();
   
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false);
@@ -94,13 +96,15 @@ export const MealPlansPage: React.FC = () => {
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
               modifiers={{
-                hasPlan: mealPlanDates
+                hasPlan: (date) => mealPlanDates.some(planDate => 
+                  planDate.toDateString() === date.toDateString()
+                )
               }}
               modifiersStyles={{
-                hasPlan: {
-                  backgroundColor: 'hsl(var(--primary))',
+                hasPlan: { 
+                  backgroundColor: 'hsl(var(--primary))', 
                   color: 'hsl(var(--primary-foreground))',
-                  fontWeight: 'bold'
+                  borderRadius: '6px'
                 }
               }}
               className="rounded-md border w-fit mx-auto"
@@ -135,29 +139,42 @@ export const MealPlansPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              className="w-full"
-              onClick={handleGeneratePlan}
-              disabled={isGenerating || (!checkPremiumAccess() && isTrialExpired)}
-              variant={!checkPremiumAccess() && isTrialExpired ? "outline" : "default"}
-            >
-              {isGenerating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                  Gerando plano...
-                </>
-              ) : (
-                <>
-                  {!checkPremiumAccess() && isTrialExpired && <Crown className="w-4 h-4 mr-2" />}
-                  {!checkPremiumAccess() && isTrialExpired ? 'Premium Necessário' : 'Gerar Plano da Semana'}
-                </>
+            <div className="space-y-4">
+              <Button 
+                className="w-full"
+                onClick={handleGeneratePlan}
+                disabled={isGenerating || !hasPremiumAccess}
+                variant={!hasPremiumAccess ? "outline" : "default"}
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Gerando plano...
+                  </>
+                ) : (
+                  <>
+                    {!hasPremiumAccess && <Crown className="w-4 h-4 mr-2" />}
+                    {!hasPremiumAccess ? 'Premium Necessário' : 'Gerar Plano da Semana'}
+                  </>
+                )}
+              </Button>
+              
+              {!hasPremiumAccess && (
+                <div className="bg-muted p-4 rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Acesso premium necessário para gerar planos de refeição
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/subscription')}
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
+                    Ativar Premium
+                  </Button>
+                </div>
               )}
-            </Button>
-            {!checkPremiumAccess() && isTrialExpired && (
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                Assine para gerar planos personalizados
-              </p>
-            )}
+            </div>
           </CardContent>
         </Card>
 
@@ -226,24 +243,6 @@ export const MealPlansPage: React.FC = () => {
           ))}
         </Tabs>
 
-        {/* Subscription Notice */}
-        {(!checkPremiumAccess() || isTrialExpired) && (
-          <Card className="mt-6 border-accent/20 bg-accent/10">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <Crown className="h-5 w-5 text-accent" />
-                  <p className="text-sm text-accent-foreground font-medium">
-                    Planos personalizados disponíveis para assinantes Premium
-                  </p>
-                </div>
-                <Button onClick={() => window.location.href = '/subscription'}>
-                  Assinar Premium - €5/mês
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
       
       <RecipeDialog

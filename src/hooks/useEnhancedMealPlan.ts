@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { useTrial } from '@/hooks/useTrial';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 interface Recipe {
   id: string;
@@ -27,12 +27,7 @@ export const useEnhancedMealPlan = () => {
   const [mealPlanDates, setMealPlanDates] = useState<Date[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isTrialActive, isTrialExpired } = useTrial();
-
-  const checkPremiumAccess = () => {
-    // Check if user has active trial or subscription
-    return isTrialActive; // Add subscription check later
-  };
+  const { hasPremiumAccess } = usePremiumAccess();
 
   const generateWeeklyMealPlan = async (startDate: Date) => {
     if (!user) {
@@ -44,7 +39,7 @@ export const useEnhancedMealPlan = () => {
       return;
     }
 
-    if (!checkPremiumAccess()) {
+    if (!hasPremiumAccess) {
       toast({
         title: "🔒 Acesso Premium Necessário",
         description: "Assine para gerar planos de refeição personalizados.",
@@ -62,22 +57,37 @@ export const useEnhancedMealPlan = () => {
         .select('*');
 
       if (recipesError) throw recipesError;
-      if (!recipes || recipes.length < 20) {
+      if (!recipes || recipes.length === 0) {
         toast({
-          title: "Receitas insuficientes",
-          description: "Não há receitas suficientes no banco para gerar um plano completo.",
+          title: "Nenhuma Receita Encontrada",
+          description: "É necessário adicionar receitas antes de gerar um plano de refeições",
           variant: "destructive",
         });
         return;
       }
 
       // Agrupar receitas por tipo
+      const mealTypes = ['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'];
       const recipesByType = {
-        'Café': recipes?.filter(r => r.meal_type === 'Café') || [],
+        'Café da Manhã': recipes?.filter(r => r.meal_type === 'Café da Manhã') || [],
         'Almoço': recipes?.filter(r => r.meal_type === 'Almoço') || [],
         'Jantar': recipes?.filter(r => r.meal_type === 'Jantar') || [],
         'Lanche': recipes?.filter(r => r.meal_type === 'Lanche') || [],
       };
+
+      // Verificar se há receitas suficientes para cada tipo de refeição
+      const insufficientMealTypes = mealTypes.filter(mealType => 
+        recipesByType[mealType as keyof typeof recipesByType].length < 7
+      );
+
+      if (insufficientMealTypes.length > 0) {
+        toast({
+          title: "Receitas Insuficientes",
+          description: `Adicione mais receitas para: ${insufficientMealTypes.join(', ')}. São necessárias pelo menos 7 receitas de cada tipo.`,
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Embaralhar as receitas para variedade
       Object.keys(recipesByType).forEach(type => {
@@ -88,7 +98,6 @@ export const useEnhancedMealPlan = () => {
         }
       });
 
-      const mealTypes = ['Café', 'Almoço', 'Jantar', 'Lanche'];
       const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
       // Criar o plano de refeições
@@ -151,6 +160,7 @@ export const useEnhancedMealPlan = () => {
 
       setWeekMeals(newWeekMeals);
       await loadMealPlanDates();
+      setSelectedDate(startDate);
 
       toast({
         title: "Plano gerado com sucesso! 🎉",
@@ -283,7 +293,5 @@ export const useEnhancedMealPlan = () => {
     setSelectedDate,
     getWeekStartDate,
     getDayOfWeek,
-    checkPremiumAccess,
-    isTrialExpired,
   };
 };
