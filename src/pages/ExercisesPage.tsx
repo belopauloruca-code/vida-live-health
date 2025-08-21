@@ -58,6 +58,11 @@ export const ExercisesPage: React.FC = () => {
       setExercises(data || []);
     } catch (error) {
       console.error('Error loading exercises:', error);
+      toast({
+        title: "Erro ao carregar exercícios",
+        description: "Tente recarregar a página.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
