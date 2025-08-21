@@ -5,32 +5,47 @@ import { Button } from '@/components/ui/button';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { Smartphone, Download, QrCode, ExternalLink, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const DownloadAppPage: React.FC = () => {
   const [isValidApk, setIsValidApk] = useState<boolean | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [androidApkUrl, setAndroidApkUrl] = useState<string>('');
   
-  // These URLs can be updated when the actual APK and TestFlight links are available
-  const androidApkUrl = import.meta.env.VITE_ANDROID_APK_URL || '/vida-live-app.apk';
   const iosTestFlightUrl = import.meta.env.VITE_IOS_TESTFLIGHT_URL || '';
   
-  // Check if APK URL is valid on component mount
+  // Check APK availability from env or Supabase Storage
   useEffect(() => {
-    const checkApkUrl = async () => {
+    const checkApkAvailability = async () => {
+      // First try environment variable
+      let url = import.meta.env.VITE_ANDROID_APK_URL;
+      
+      // If no env variable, try Supabase Storage
+      if (!url) {
+        const { data } = supabase.storage
+          .from('apps')
+          .getPublicUrl('vida-live-latest.apk');
+        url = data.publicUrl;
+      }
+      
+      setAndroidApkUrl(url || '');
+      
+      if (!url) {
+        setIsValidApk(false);
+        return;
+      }
+      
       try {
-        const response = await fetch(androidApkUrl, { method: 'HEAD' });
+        const response = await fetch(url, { method: 'HEAD' });
         setIsValidApk(response.ok);
       } catch (error) {
+        console.error('Error checking APK availability:', error);
         setIsValidApk(false);
       }
     };
-    
-    if (androidApkUrl && !androidApkUrl.includes('/vida-live-app.apk')) {
-      checkApkUrl();
-    } else {
-      setIsValidApk(false);
-    }
-  }, [androidApkUrl]);
+
+    checkApkAvailability();
+  }, []);
   
   const generateQRCodeUrl = (url: string) => {
     return `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(url)}`;
