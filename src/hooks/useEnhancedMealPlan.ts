@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -28,6 +28,36 @@ export const useEnhancedMealPlan = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { hasPremiumAccess } = usePremiumAccess();
+
+  // Real-time updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase.channel('meal-plans-updates')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'meal_plans',
+        filter: `user_id=eq.${user.id}`
+      }, () => {
+        console.log('Meal plan updated, reloading...');
+        loadMealPlanForWeek(selectedDate);
+        loadMealPlanDates();
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'meal_plan_items'
+      }, () => {
+        console.log('Meal plan items updated, reloading...');
+        loadMealPlanForWeek(selectedDate);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, selectedDate]);
 
   const generateWeeklyMealPlan = async (startDate: Date) => {
     if (!user) {
@@ -75,23 +105,17 @@ export const useEnhancedMealPlan = () => {
         'Lanche': recipes?.filter(r => r.meal_type === 'Lanche') || [],
       };
 
-      // Verificar se há receitas suficientes para cada tipo de refeição
-      const insufficientMealTypes = mealTypes.filter(mealType => 
-        recipesByType[mealType as keyof typeof recipesByType].length < 7
-      );
-
-      if (insufficientMealTypes.length > 0) {
-        toast({
-          title: "Receitas Insuficientes",
-          description: `Adicione mais receitas para: ${insufficientMealTypes.join(', ')}. São necessárias pelo menos 7 receitas de cada tipo.`,
-          variant: "destructive",
-        });
-        return;
-      }
+      // Para tipos sem receitas, usar todas as receitas como fallback
+      const finalRecipesByType = { ...recipesByType };
+      Object.keys(finalRecipesByType).forEach(mealType => {
+        if (finalRecipesByType[mealType as keyof typeof finalRecipesByType].length === 0) {
+          finalRecipesByType[mealType as keyof typeof finalRecipesByType] = [...recipes];
+        }
+      });
 
       // Embaralhar as receitas para variedade
-      Object.keys(recipesByType).forEach(type => {
-        const recipes = recipesByType[type as keyof typeof recipesByType];
+      Object.keys(finalRecipesByType).forEach(type => {
+        const recipes = finalRecipesByType[type as keyof typeof finalRecipesByType];
         for (let i = recipes.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [recipes[i], recipes[j]] = [recipes[j], recipes[i]];
@@ -100,16 +124,40 @@ export const useEnhancedMealPlan = () => {
 
       const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
-      // Criar o plano de refeições
+      // Remover plano existente da semana se houver
+      const weekStart = startDate.toISOString().split('T')[0];
       const endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 6);
+      const weekEnd = endDate.toISOString().split('T')[0];
 
+      const { data: existingPlans } = await supabase
+        .from('meal_plans')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('start_date', weekStart)
+        .lte('start_date', weekEnd);
+
+      if (existingPlans && existingPlans.length > 0) {
+        // Deletar itens dos planos existentes
+        await supabase
+          .from('meal_plan_items')
+          .delete()
+          .in('meal_plan_id', existingPlans.map(p => p.id));
+        
+        // Deletar os planos
+        await supabase
+          .from('meal_plans')
+          .delete()
+          .in('id', existingPlans.map(p => p.id));
+      }
+
+      // Criar novo plano de refeições
       const { data: mealPlan, error: mealPlanError } = await supabase
         .from('meal_plans')
         .insert({
           user_id: user.id,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
+          start_date: weekStart,
+          end_date: weekEnd,
           daily_kcal: 1800,
           meals_per_day: 4,
         })
@@ -118,22 +166,27 @@ export const useEnhancedMealPlan = () => {
 
       if (mealPlanError) throw mealPlanError;
 
-      // Gerar itens do plano sem repetições
+      // Gerar itens do plano com repetição quando necessário
       const planItems = [];
       const newWeekMeals: Record<string, MealPlanItem[]> = {};
-      const usedRecipes = new Set<string>();
+      let hasRepeatedRecipes = false;
 
       for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
         const dayName = weekDays[dayIndex];
         newWeekMeals[dayName] = [];
 
         for (const mealType of mealTypes) {
-          const availableRecipes = recipesByType[mealType as keyof typeof recipesByType]
-            .filter(recipe => !usedRecipes.has(recipe.id));
+          const availableRecipes = finalRecipesByType[mealType as keyof typeof finalRecipesByType];
           
           if (availableRecipes.length > 0) {
-            const selectedRecipe = availableRecipes[0];
-            usedRecipes.add(selectedRecipe.id);
+            // Usar índice cíclico para permitir repetição
+            const recipeIndex = dayIndex % availableRecipes.length;
+            const selectedRecipe = availableRecipes[recipeIndex];
+            
+            // Verificar se há repetição (mais de 7 dias e menos receitas que dias)
+            if (availableRecipes.length < 7) {
+              hasRepeatedRecipes = true;
+            }
             
             planItems.push({
               meal_plan_id: mealPlan.id,
@@ -162,9 +215,13 @@ export const useEnhancedMealPlan = () => {
       await loadMealPlanDates();
       setSelectedDate(startDate);
 
+      const successMessage = hasRepeatedRecipes 
+        ? "Plano gerado! Algumas receitas foram repetidas para completar a semana."
+        : `Plano semanal criado com ${planItems.length} receitas.`;
+
       toast({
         title: "Plano gerado com sucesso! 🎉",
-        description: `Plano semanal criado com ${usedRecipes.size} receitas únicas.`,
+        description: successMessage,
       });
 
     } catch (error) {
@@ -206,9 +263,9 @@ export const useEnhancedMealPlan = () => {
         .eq('user_id', user.id)
         .gte('start_date', startOfWeek.toISOString().split('T')[0])
         .lte('start_date', endOfWeek.toISOString().split('T')[0])
-        .order('created_at', { ascending: false })
+        .order('start_date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (mealPlan?.meal_plan_items) {
         const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
