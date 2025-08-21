@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 interface Recipe {
   id: string;
@@ -11,344 +11,309 @@ interface Recipe {
   kcal: number;
   duration_min: number;
   ingredients: string;
-  instructions?: string;
+  instructions: string;
+}
+
+interface MealPlan {
+  id: string;
+  user_id: string;
+  start_date: string;
+  end_date: string;
+  daily_kcal: number;
+  meals_per_day: number;
+  created_at?: string;
 }
 
 interface MealPlanItem {
-  recipe: Recipe;
+  id: string;
+  meal_plan_id: string;
   day_index: number;
   meal_type: string;
+  recipe_id: string;
+  recipe?: Recipe;
 }
 
 export const useEnhancedMealPlan = () => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [weekMeals, setWeekMeals] = useState<Record<string, MealPlanItem[]>>({});
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [mealPlanDates, setMealPlanDates] = useState<Date[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
-  const { hasPremiumAccess } = usePremiumAccess();
+  
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [currentPlan, setCurrentPlan] = useState<MealPlan | null>(null);
+  const [planItems, setPlanItems] = useState<MealPlanItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
 
-  // Real-time updates
+  // Normalizar meal_type para compatibilidade com o banco
+  const normalizeMealType = (mealType: string): string => {
+    const normalizations: { [key: string]: string } = {
+      'Café da Manhã': 'Café',
+      'cafe da manha': 'Café',
+      'breakfast': 'Café'
+    };
+    
+    return normalizations[mealType] || mealType;
+  };
+
   useEffect(() => {
+    if (user) {
+      loadRecipes();
+      loadCurrentPlan();
+      subscribeToRealTimeUpdates();
+    }
+  }, [user]);
+
+  const subscribeToRealTimeUpdates = () => {
     if (!user) return;
 
-    const channel = supabase.channel('meal-plans-updates')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'meal_plans',
-        filter: `user_id=eq.${user.id}`
-      }, () => {
-        console.log('Meal plan updated, reloading...');
-        loadMealPlanForWeek(selectedDate);
-        loadMealPlanDates();
-      })
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'meal_plan_items'
-      }, () => {
-        console.log('Meal plan items updated, reloading...');
-        loadMealPlanForWeek(selectedDate);
-      })
+    // Subscribe to meal_plans changes
+    const planSubscription = supabase
+      .channel('meal_plans_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'meal_plans',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => {
+          console.log('Meal plan changed, reloading...');
+          loadCurrentPlan();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to meal_plan_items changes
+    const itemsSubscription = supabase
+      .channel('meal_plan_items_changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'meal_plan_items'
+        }, 
+        () => {
+          console.log('Meal plan items changed, reloading...');
+          if (currentPlan) {
+            loadPlanItems(currentPlan.id);
+          }
+        }
+      )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      planSubscription.unsubscribe();
+      itemsSubscription.unsubscribe();
     };
-  }, [user, selectedDate]);
+  };
 
-  const generateWeeklyMealPlan = async (startDate: Date) => {
-    if (!user) {
+  const loadRecipes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('recipes')
+        .select('*')
+        .order('meal_type', { ascending: true });
+
+      if (error) throw error;
+
+      console.log('Loaded recipes:', data);
+      setRecipes(data || []);
+    } catch (error) {
+      console.error('Error loading recipes:', error);
       toast({
-        title: "Erro",
-        description: "Você precisa estar logado para gerar um plano.",
+        title: "Erro ao carregar receitas",
+        description: "Tente recarregar a página.",
         variant: "destructive",
       });
-      return;
     }
+  };
 
-    if (!hasPremiumAccess) {
-      toast({
-        title: "🔒 Acesso Premium Necessário",
-        description: "Assine para gerar planos de refeição personalizados.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
+  const loadCurrentPlan = async () => {
+    if (!user) return;
     
     try {
-      // Buscar todas as receitas
-      const { data: recipes, error: recipesError } = await supabase
-        .from('recipes')
-        .select('*');
+      setLoading(true);
+      const { data: plans, error } = await supabase
+        .from('meal_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (recipesError) throw recipesError;
-      if (!recipes || recipes.length === 0) {
+      if (error) throw error;
+
+      if (plans && plans.length > 0) {
+        const plan = plans[0];
+        setCurrentPlan(plan);
+        await loadPlanItems(plan.id);
+      } else {
+        setCurrentPlan(null);
+        setPlanItems([]);
+      }
+    } catch (error) {
+      console.error('Error loading meal plan:', error);
+      toast({
+        title: "Erro ao carregar plano",
+        description: "Tente recarregar a página.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPlanItems = async (planId: string) => {
+    try {
+      const { data: items, error } = await supabase
+        .from('meal_plan_items')
+        .select(`
+          *,
+          recipe:recipes(*)
+        `)
+        .eq('meal_plan_id', planId)
+        .order('day_index', { ascending: true });
+
+      if (error) throw error;
+
+      console.log('Loaded plan items:', items);
+      setPlanItems(items || []);
+    } catch (error) {
+      console.error('Error loading plan items:', error);
+      toast({
+        title: "Erro ao carregar itens do plano",
+        description: "Tente recarregar a página.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const generateMealPlan = async (dailyKcal: number, days: number = 7) => {
+    if (!user) return;
+
+    try {
+      setGenerating(true);
+      
+      console.log('Starting meal plan generation...', { dailyKcal, days, recipesCount: recipes.length });
+      
+      if (recipes.length === 0) {
         toast({
-          title: "Nenhuma Receita Encontrada",
-          description: "É necessário adicionar receitas antes de gerar um plano de refeições",
+          title: "Nenhuma receita disponível",
+          description: "Adicione algumas receitas antes de gerar um plano.",
           variant: "destructive",
         });
         return;
       }
 
-      // Agrupar receitas por tipo
-      const mealTypes = ['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'];
-      const recipesByType = {
-        'Café da Manhã': recipes?.filter(r => r.meal_type === 'Café da Manhã') || [],
-        'Almoço': recipes?.filter(r => r.meal_type === 'Almoço') || [],
-        'Jantar': recipes?.filter(r => r.meal_type === 'Jantar') || [],
-        'Lanche': recipes?.filter(r => r.meal_type === 'Lanche') || [],
-      };
-
-      // Para tipos sem receitas, usar todas as receitas como fallback
-      const finalRecipesByType = { ...recipesByType };
-      Object.keys(finalRecipesByType).forEach(mealType => {
-        if (finalRecipesByType[mealType as keyof typeof finalRecipesByType].length === 0) {
-          finalRecipesByType[mealType as keyof typeof finalRecipesByType] = [...recipes];
-        }
-      });
-
-      // Embaralhar as receitas para variedade
-      Object.keys(finalRecipesByType).forEach(type => {
-        const recipes = finalRecipesByType[type as keyof typeof finalRecipesByType];
-        for (let i = recipes.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [recipes[i], recipes[j]] = [recipes[j], recipes[i]];
-        }
-      });
-
-      const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-
-      // Remover plano existente da semana se houver
-      const weekStart = startDate.toISOString().split('T')[0];
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 6);
-      const weekEnd = endDate.toISOString().split('T')[0];
-
-      const { data: existingPlans } = await supabase
-        .from('meal_plans')
-        .select('id')
-        .eq('user_id', user.id)
-        .gte('start_date', weekStart)
-        .lte('start_date', weekEnd);
-
-      if (existingPlans && existingPlans.length > 0) {
-        // Deletar itens dos planos existentes
-        await supabase
-          .from('meal_plan_items')
-          .delete()
-          .in('meal_plan_id', existingPlans.map(p => p.id));
-        
-        // Deletar os planos
-        await supabase
-          .from('meal_plans')
-          .delete()
-          .in('id', existingPlans.map(p => p.id));
+      // Delete existing plan if any
+      if (currentPlan) {
+        await supabase.from('meal_plans').delete().eq('id', currentPlan.id);
       }
 
-      // Criar novo plano de refeições
-      const { data: mealPlan, error: mealPlanError } = await supabase
+      // Create new meal plan
+      const startDate = new Date().toISOString().split('T')[0];
+      const endDate = new Date(Date.now() + (days - 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
+      const { data: newPlan, error: planError } = await supabase
         .from('meal_plans')
         .insert({
           user_id: user.id,
-          start_date: weekStart,
-          end_date: weekEnd,
-          daily_kcal: 1800,
-          meals_per_day: 4,
+          start_date: startDate,
+          end_date: endDate,
+          daily_kcal: dailyKcal,
+          meals_per_day: 4
         })
         .select()
         .single();
 
-      if (mealPlanError) throw mealPlanError;
+      if (planError) throw planError;
 
-      // Gerar itens do plano com repetição quando necessário
-      const planItems = [];
-      const newWeekMeals: Record<string, MealPlanItem[]> = {};
-      let hasRepeatedRecipes = false;
+      console.log('Created meal plan:', newPlan);
 
-      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
-        const dayName = weekDays[dayIndex];
-        newWeekMeals[dayName] = [];
+      // Generate meal plan items
+      const mealTypes = ['Café', 'Almoço', 'Lanche', 'Jantar'];
+      const kcalPerMeal = Math.floor(dailyKcal / 4);
+      
+      const planItems: Omit<MealPlanItem, 'id'>[] = [];
+      let repeatedRecipeCount = 0;
 
+      for (let dayIndex = 0; dayIndex < days; dayIndex++) {
         for (const mealType of mealTypes) {
-          const availableRecipes = finalRecipesByType[mealType as keyof typeof finalRecipesByType];
+          // Try to find a recipe for this meal type
+          let availableRecipes = recipes.filter(r => normalizeMealType(r.meal_type) === mealType);
           
-          if (availableRecipes.length > 0) {
-            // Usar índice cíclico para permitir repetição
-            const recipeIndex = dayIndex % availableRecipes.length;
-            const selectedRecipe = availableRecipes[recipeIndex];
-            
-            // Verificar se há repetição (mais de 7 dias e menos receitas que dias)
-            if (availableRecipes.length < 7) {
-              hasRepeatedRecipes = true;
-            }
-            
-            planItems.push({
-              meal_plan_id: mealPlan.id,
-              recipe_id: selectedRecipe.id,
-              day_index: dayIndex,
-              meal_type: mealType,
-            });
+          // If no recipes for this meal type, use any available recipe
+          if (availableRecipes.length === 0) {
+            availableRecipes = recipes;
+            repeatedRecipeCount++;
+          }
+          
+          // Select a recipe (random or based on calories)
+          const targetKcal = kcalPerMeal;
+          let selectedRecipe = availableRecipes.find(r => Math.abs(r.kcal - targetKcal) < 100);
+          
+          if (!selectedRecipe) {
+            // If no recipe close to target calories, pick any available
+            selectedRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+            repeatedRecipeCount++;
+          }
 
-            newWeekMeals[dayName].push({
-              recipe: selectedRecipe,
+          if (selectedRecipe) {
+            planItems.push({
+              meal_plan_id: newPlan.id,
               day_index: dayIndex,
-              meal_type: mealType,
+              meal_type: normalizeMealType(mealType),
+              recipe_id: selectedRecipe.id
             });
           }
         }
       }
 
-      // Inserir itens no banco
-      const { error: itemsError } = await supabase
-        .from('meal_plan_items')
-        .insert(planItems);
+      console.log('Generated plan items:', planItems);
 
-      if (itemsError) throw itemsError;
+      // Insert all plan items
+      if (planItems.length > 0) {
+        const { error: itemsError } = await supabase
+          .from('meal_plan_items')
+          .insert(planItems);
 
-      setWeekMeals(newWeekMeals);
-      await loadMealPlanDates();
-      setSelectedDate(startDate);
+        if (itemsError) {
+          console.error('Error inserting plan items:', itemsError);
+          throw itemsError;
+        }
+      }
 
-      const successMessage = hasRepeatedRecipes 
-        ? "Plano gerado! Algumas receitas foram repetidas para completar a semana."
-        : `Plano semanal criado com ${planItems.length} receitas.`;
+      // Show success message
+      let successMessage = "Plano de refeições gerado com sucesso!";
+      if (repeatedRecipeCount > 0) {
+        successMessage += ` (${repeatedRecipeCount} receitas foram repetidas devido à disponibilidade limitada)`;
+      }
 
       toast({
-        title: "Plano gerado com sucesso! 🎉",
+        title: "Sucesso!",
         description: successMessage,
       });
 
+      // Reload the current plan
+      await loadCurrentPlan();
+      
     } catch (error) {
       console.error('Error generating meal plan:', error);
       toast({
         title: "Erro ao gerar plano",
-        description: "Tente novamente em alguns instantes.",
+        description: error instanceof Error ? error.message : "Tente novamente.",
         variant: "destructive",
       });
     } finally {
-      setIsGenerating(false);
+      setGenerating(false);
     }
-  };
-
-  const loadMealPlanForWeek = async (date: Date) => {
-    if (!user) return;
-
-    // Get start of week (Monday)
-    const startOfWeek = new Date(date);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-    startOfWeek.setDate(diff);
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-    try {
-      const { data: mealPlan } = await supabase
-        .from('meal_plans')
-        .select(`
-          *,
-          meal_plan_items (
-            day_index,
-            meal_type,
-            recipes (*)
-          )
-        `)
-        .eq('user_id', user.id)
-        .gte('start_date', startOfWeek.toISOString().split('T')[0])
-        .lte('start_date', endOfWeek.toISOString().split('T')[0])
-        .order('start_date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (mealPlan?.meal_plan_items) {
-        const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-        const newWeekMeals: Record<string, MealPlanItem[]> = {};
-
-        weekDays.forEach(day => {
-          newWeekMeals[day] = [];
-        });
-
-        mealPlan.meal_plan_items.forEach((item: any) => {
-          const dayName = weekDays[item.day_index];
-          if (item.recipes) {
-            newWeekMeals[dayName].push({
-              recipe: item.recipes,
-              day_index: item.day_index,
-              meal_type: item.meal_type,
-            });
-          }
-        });
-
-        setWeekMeals(newWeekMeals);
-      } else {
-        // Clear meals if no plan found
-        const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-        const emptyMeals: Record<string, MealPlanItem[]> = {};
-        weekDays.forEach(day => {
-          emptyMeals[day] = [];
-        });
-        setWeekMeals(emptyMeals);
-      }
-    } catch (error) {
-      console.error('Error loading meal plan for week:', error);
-    }
-  };
-
-  const loadMealPlanDates = async () => {
-    if (!user) return;
-
-    try {
-      const { data: mealPlans } = await supabase
-        .from('meal_plans')
-        .select('start_date, end_date')
-        .eq('user_id', user.id);
-
-      if (mealPlans) {
-        const dates: Date[] = [];
-        mealPlans.forEach(plan => {
-          const start = new Date(plan.start_date);
-          const end = new Date(plan.end_date);
-          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            dates.push(new Date(d));
-          }
-        });
-        setMealPlanDates(dates);
-      }
-    } catch (error) {
-      console.error('Error loading meal plan dates:', error);
-    }
-  };
-
-  const getWeekStartDate = (date: Date) => {
-    const startOfWeek = new Date(date);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-    startOfWeek.setDate(diff);
-    return startOfWeek;
-  };
-
-  const getDayOfWeek = (date: Date) => {
-    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    return weekDays[date.getDay()];
   };
 
   return {
-    weekMeals,
-    isGenerating,
-    selectedDate,
-    mealPlanDates,
-    generateWeeklyMealPlan,
-    loadMealPlanForWeek,
-    loadMealPlanDates,
-    setSelectedDate,
-    getWeekStartDate,
-    getDayOfWeek,
+    recipes,
+    currentPlan,
+    planItems,
+    loading,
+    generating,
+    generateMealPlan,
+    loadCurrentPlan
   };
 };

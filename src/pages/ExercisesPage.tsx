@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Clock, Zap, Play, Target, Activity } from 'lucide-react';
+import { Clock, Zap, Play, Target, Activity, Video } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -19,6 +20,7 @@ interface Exercise {
   kcal_est: number;
   level: string;
   muscles: string;
+  video_url?: string;
 }
 
 export const ExercisesPage: React.FC = () => {
@@ -28,6 +30,7 @@ export const ExercisesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
+  const [selectedVideoExercise, setSelectedVideoExercise] = useState<Exercise | null>(null);
 
   useEffect(() => {
     loadExercises();
@@ -126,6 +129,12 @@ export const ExercisesPage: React.FC = () => {
     }
   };
 
+  const openVideoDialog = (exercise: Exercise) => {
+    if (exercise.video_url) {
+      setSelectedVideoExercise(exercise);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -188,7 +197,19 @@ export const ExercisesPage: React.FC = () => {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <CardTitle className="text-lg">{exercise.title}</CardTitle>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            {exercise.title}
+                            {exercise.video_url && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openVideoDialog(exercise)}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Video className="h-4 w-4 text-blue-500" />
+                              </Button>
+                            )}
+                          </CardTitle>
                           <CardDescription className="mt-1">
                             {exercise.muscles && (
                               <span className="flex items-center text-sm text-gray-600">
@@ -216,14 +237,25 @@ export const ExercisesPage: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <Button
-                        onClick={() => startExercise(exercise)}
-                        disabled={!!activeTimer}
-                        className="w-full bg-green-500 hover:bg-green-600"
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        Iniciar Exercício
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => startExercise(exercise)}
+                          disabled={!!activeTimer}
+                          className="flex-1 bg-green-500 hover:bg-green-600"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Iniciar Exercício
+                        </Button>
+                        {exercise.video_url && (
+                          <Button
+                            variant="outline"
+                            onClick={() => openVideoDialog(exercise)}
+                            className="px-3"
+                          >
+                            <Video className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -243,6 +275,29 @@ export const ExercisesPage: React.FC = () => {
             </TabsContent>
           ))}
         </Tabs>
+
+        {/* Video Dialog */}
+        <Dialog open={!!selectedVideoExercise} onOpenChange={() => setSelectedVideoExercise(null)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>{selectedVideoExercise?.title}</DialogTitle>
+              <DialogDescription>
+                Vídeo demonstrativo do exercício
+              </DialogDescription>
+            </DialogHeader>
+            {selectedVideoExercise?.video_url && (
+              <div className="aspect-video">
+                <iframe
+                  src={selectedVideoExercise.video_url}
+                  title={`Vídeo: ${selectedVideoExercise.title}`}
+                  className="w-full h-full rounded-lg"
+                  frameBorder="0"
+                  allowFullScreen
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
       
       <BottomNavigation />

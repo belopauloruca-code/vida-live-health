@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,11 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Utensils, Activity } from 'lucide-react';
+import { Plus, Edit, Trash2, Utensils, Activity, Video } from 'lucide-react';
 
 export const AdminContent: React.FC = () => {
   const { toast } = useToast();
@@ -38,6 +36,7 @@ export const AdminContent: React.FC = () => {
     kcal_est: '',
     level: 'Iniciante',
     muscles: '',
+    video_url: '',
   });
 
   useEffect(() => {
@@ -98,6 +97,7 @@ export const AdminContent: React.FC = () => {
         ...exerciseForm,
         duration_min: parseInt(exerciseForm.duration_min),
         kcal_est: parseInt(exerciseForm.kcal_est),
+        video_url: exerciseForm.video_url || null,
       };
 
       if (editingExercise) {
@@ -177,6 +177,7 @@ export const AdminContent: React.FC = () => {
       kcal_est: exercise.kcal_est.toString(),
       level: exercise.level,
       muscles: exercise.muscles || '',
+      video_url: exercise.video_url || '',
     });
   };
 
@@ -201,6 +202,7 @@ export const AdminContent: React.FC = () => {
       kcal_est: '',
       level: 'Iniciante',
       muscles: '',
+      video_url: '',
     });
   };
 
@@ -439,6 +441,22 @@ export const AdminContent: React.FC = () => {
                   />
                 </div>
 
+                <div>
+                  <Label htmlFor="exercise-video" className="flex items-center gap-2">
+                    <Video className="h-4 w-4" />
+                    URL do Vídeo (YouTube Embed)
+                  </Label>
+                  <Input
+                    id="exercise-video"
+                    value={exerciseForm.video_url}
+                    onChange={(e) => setExerciseForm(prev => ({ ...prev, video_url: e.target.value }))}
+                    placeholder="https://www.youtube.com/embed/VIDEO_ID"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Use o formato de embed do YouTube: https://www.youtube.com/embed/VIDEO_ID
+                  </p>
+                </div>
+
                 <div className="flex space-x-2">
                   <Button onClick={saveExercise} className="flex-1">
                     {editingExercise ? 'Atualizar' : 'Criar'} Exercício
@@ -463,7 +481,12 @@ export const AdminContent: React.FC = () => {
                     <div key={exercise.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h4 className="font-medium">{exercise.title}</h4>
+                          <h4 className="font-medium flex items-center gap-2">
+                            {exercise.title}
+                            {exercise.video_url && (
+                              <Video className="h-4 w-4 text-blue-500" />
+                            )}
+                          </h4>
                           <p className="text-sm text-gray-500">
                             {exercise.category} • {exercise.level} • {exercise.duration_min} min • {exercise.kcal_est} kcal
                           </p>
