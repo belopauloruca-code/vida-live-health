@@ -77,18 +77,10 @@ export const HomePage: React.FC = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              onClick={() => window.open('https://play.google.com/store/apps', '_blank')}
+              className="border-primary text-primary hover:bg-primary/10"
+              onClick={() => navigate('/download-app')}
             >
-              📱 Baixar para Android
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              onClick={() => window.open('https://apps.apple.com/app', '_blank')}
-            >
-              🍎 Baixar para iOS
+              📱 Baixar App Mobile
             </Button>
           </div>
         </div>
