@@ -43,9 +43,37 @@ export const SubscriptionPlanPage: React.FC = () => {
     navigate('/payment');
   };
 
-  const handleManageSubscription = () => {
-    // Open Stripe customer portal
-    window.open('https://billing.stripe.com/p/login/test_portal', '_blank');
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      
+      if (error) throw error;
+      
+      // Open Stripe customer portal in a new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      console.error('Portal error:', error);
+      // Fallback to generic portal if edge function fails
+      window.open('https://billing.stripe.com/p/login/test_portal', '_blank');
+    }
+  };
+
+  const handleRefreshSubscription = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      
+      if (error) throw error;
+      
+      // Reload subscription data
+      loadSubscription();
+    } catch (error: any) {
+      console.error('Refresh error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -138,10 +166,11 @@ export const SubscriptionPlanPage: React.FC = () => {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={loadSubscription}
+                  onClick={handleRefreshSubscription}
                   className="flex-1"
+                  disabled={loading}
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   Atualizar Status
                 </Button>
               </div>

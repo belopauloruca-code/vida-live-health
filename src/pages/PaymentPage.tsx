@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, CreditCard, Shield, Zap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export const PaymentPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,14 +17,21 @@ export const PaymentPage: React.FC = () => {
     "Suporte prioritário"
   ];
 
-  const handleSubscribe = () => {
-    // Open Stripe payment link in new tab
-    window.open('https://buy.stripe.com/6oU7sMb7Y3d0dr4gTB2sM06', '_blank');
-    
-    // Redirect to success page after a brief delay
-    setTimeout(() => {
-      navigate('/payment-success');
-    }, 1000);
+  const handleSubscribe = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout');
+      
+      if (error) throw error;
+      
+      // Open Stripe checkout in a new tab
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      // Fallback to original link if edge function fails
+      window.open('https://buy.stripe.com/6oU7sMb7Y3d0dr4gTB2sM06', '_blank');
+    }
   };
 
   return (
