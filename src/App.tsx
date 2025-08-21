@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { PWAUpdater } from '@/components/PWAUpdater';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
@@ -56,6 +57,7 @@ function App() {
             </Routes>
           </div>
           <Toaster />
+          <PWAUpdater />
         </AuthProvider>
       </Router>
     </QueryClientProvider>
