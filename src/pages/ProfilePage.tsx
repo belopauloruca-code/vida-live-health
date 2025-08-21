@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { BrandHeader } from '@/components/ui/brand-header';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { AvatarUploader } from '@/components/profile/AvatarUploader';
 import { ProfileForm } from '@/components/profile/ProfileForm';
@@ -89,15 +90,14 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            <User className="h-6 w-6 mr-2 text-green-500" />
-            Meu Perfil
-          </h1>
-          <p className="text-gray-600">Mantenha suas informações atualizadas</p>
+          <BrandHeader 
+            title="Meu Perfil"
+            subtitle="Mantenha suas informações atualizadas"
+          />
         </div>
 
         {/* Avatar */}

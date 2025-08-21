@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { BrandHeader } from '@/components/ui/brand-header';
+import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -83,15 +85,17 @@ export const DashboardPage: React.FC = () => {
   const cupsDrunk = Math.floor(hydrationToday / 250);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Olá, {profile?.name || 'Usuário'}!
-          </h1>
-          <p className="text-gray-600">Como está sua jornada hoje?</p>
+          <BrandHeader 
+            title={`Olá, ${profile?.name || 'Usuário'}!`}
+            subtitle="Como está sua jornada hoje?"
+          />
         </div>
+        
+        <TrialBanner />
 
         {/* Main Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

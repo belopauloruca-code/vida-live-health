@@ -3,21 +3,45 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { BrandHeader } from '@/components/ui/brand-header';
+import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Clock, Zap } from 'lucide-react';
-import { useMealPlan } from '@/hooks/useMealPlan';
+import { Clock, Zap, Calendar as CalendarIcon, Crown } from 'lucide-react';
+import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
 import { RecipeDialog } from '@/components/meal-plans/RecipeDialog';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 export const MealPlansPage: React.FC = () => {
-  const { weekMeals, isGenerating, generateMealPlan, loadExistingPlan } = useMealPlan();
+  const {
+    weekMeals,
+    isGenerating,
+    selectedDate,
+    mealPlanDates,
+    generateWeeklyMealPlan,
+    loadMealPlanForWeek,
+    loadMealPlanDates,
+    setSelectedDate,
+    getWeekStartDate,
+    getDayOfWeek,
+    checkPremiumAccess,
+    isTrialExpired,
+  } = useEnhancedMealPlan();
+  
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false);
 
   const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
   useEffect(() => {
-    loadExistingPlan();
+    loadMealPlanDates();
+    loadMealPlanForWeek(selectedDate);
   }, []);
+
+  useEffect(() => {
+    loadMealPlanForWeek(selectedDate);
+  }, [selectedDate]);
 
   const handleViewRecipe = (recipe: any) => {
     setSelectedRecipe(recipe);
@@ -28,31 +52,112 @@ export const MealPlansPage: React.FC = () => {
     return weekMeals[day] || [];
   };
 
+  const handleGeneratePlan = () => {
+    const weekStart = getWeekStartDate(selectedDate);
+    generateWeeklyMealPlan(weekStart);
+  };
+
+  const isDateWithPlan = (date: Date) => {
+    return mealPlanDates.some(planDate => 
+      planDate.toDateString() === date.toDateString()
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Meus Planos</h1>
-          <p className="text-gray-600">Plano semanal personalizado para você</p>
+          <BrandHeader 
+            title="Meus Planos"
+            subtitle="Plano semanal personalizado para você"
+          />
         </div>
 
-        {/* Plan Summary */}
-        <Card className="mb-6 border-green-100">
+        {/* Trial Banner */}
+        <TrialBanner />
+
+        {/* Calendar Section */}
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-green-600">Plano Semanal Ativo</CardTitle>
+            <div className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5 text-primary" />
+              <CardTitle>Selecione uma Semana</CardTitle>
+            </div>
+            <CardDescription>
+              Escolha uma data para visualizar ou gerar o plano semanal
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              modifiers={{
+                hasPlan: mealPlanDates
+              }}
+              modifiersStyles={{
+                hasPlan: {
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'hsl(var(--primary-foreground))',
+                  fontWeight: 'bold'
+                }
+              }}
+              className="rounded-md border w-fit mx-auto"
+            />
+            <div className="mt-4 text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Semana selecionada: {format(getWeekStartDate(selectedDate), 'dd/MM', { locale: pt })} - {format(new Date(getWeekStartDate(selectedDate).getTime() + 6 * 24 * 60 * 60 * 1000), 'dd/MM/yyyy', { locale: pt })}
+              </p>
+              <div className="flex items-center justify-center gap-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded bg-primary"></div>
+                  <span>Com plano</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded border border-border"></div>
+                  <span>Sem plano</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Plan Summary */}
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-primary" />
+              <CardTitle className="text-primary">Plano Semanal</CardTitle>
+            </div>
             <CardDescription>
               Meta: 1.800 kcal/dia • 4 refeições • 7 dias
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button 
-              className="bg-green-500 hover:bg-green-600 w-full"
-              onClick={generateMealPlan}
-              disabled={isGenerating}
+              className="w-full"
+              onClick={handleGeneratePlan}
+              disabled={isGenerating || (!checkPremiumAccess() && isTrialExpired)}
+              variant={!checkPremiumAccess() && isTrialExpired ? "outline" : "default"}
             >
-              {isGenerating ? 'Gerando...' : 'Gerar Novo Plano'}
+              {isGenerating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                  Gerando plano...
+                </>
+              ) : (
+                <>
+                  {!checkPremiumAccess() && isTrialExpired && <Crown className="w-4 h-4 mr-2" />}
+                  {!checkPremiumAccess() && isTrialExpired ? 'Premium Necessário' : 'Gerar Plano da Semana'}
+                </>
+              )}
             </Button>
+            {!checkPremiumAccess() && isTrialExpired && (
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Assine para gerar planos personalizados
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -107,11 +212,11 @@ export const MealPlansPage: React.FC = () => {
                     </Card>
                   ))
                 ) : (
-                  <Card className="border-gray-200">
+                  <Card className="border-border">
                     <CardContent className="pt-6">
-                      <div className="text-center text-gray-500">
-                        <p>Nenhum plano gerado ainda.</p>
-                        <p className="text-sm mt-2">Clique em "Gerar Novo Plano" para começar!</p>
+                      <div className="text-center text-muted-foreground">
+                        <p>Nenhum plano gerado para esta semana.</p>
+                        <p className="text-sm mt-2">Use o calendário para selecionar uma semana e gerar um novo plano!</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -122,18 +227,23 @@ export const MealPlansPage: React.FC = () => {
         </Tabs>
 
         {/* Subscription Notice */}
-        <Card className="mt-6 border-yellow-200 bg-yellow-50">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-sm text-gray-700 mb-3">
-                🔒 Planos personalizados disponíveis para assinantes Premium
-              </p>
-              <Button className="bg-green-500 hover:bg-green-600">
-                Assinar Premium - €5/mês
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {(!checkPremiumAccess() || isTrialExpired) && (
+          <Card className="mt-6 border-accent/20 bg-accent/10">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <Crown className="h-5 w-5 text-accent" />
+                  <p className="text-sm text-accent-foreground font-medium">
+                    Planos personalizados disponíveis para assinantes Premium
+                  </p>
+                </div>
+                <Button onClick={() => window.location.href = '/subscription'}>
+                  Assinar Premium - €5/mês
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <RecipeDialog

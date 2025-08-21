@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BrandHeader } from '@/components/ui/brand-header';
+import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { Clock, Zap, Play, Target, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -133,13 +135,17 @@ export const ExercisesPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Exercícios</h1>
-          <p className="text-gray-600">Encontre o treino perfeito para você</p>
+          <BrandHeader 
+            title="Exercícios"
+            subtitle="Encontre o treino perfeito para você"
+          />
         </div>
+        
+        <TrialBanner />
 
         {/* Active Timer */}
         {activeTimer && (

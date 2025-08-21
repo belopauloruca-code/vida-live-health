@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { PWAUpdater } from '@/components/PWAUpdater';
+import { SplashScreen } from '@/components/ui/splash-screen';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
@@ -29,6 +30,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthProvider>
+          <SplashScreen />
           <div className="min-h-screen bg-background">
             <Routes>
               {/* Public routes */}
