@@ -3,258 +3,209 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Smartphone, Download, QrCode, ExternalLink, AlertTriangle } from 'lucide-react';
+import { BrandHeader } from '@/components/ui/brand-header';
+import { Smartphone, Download, QrCode, Zap, Wifi, Timer, Cloud, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 export const DownloadAppPage: React.FC = () => {
-  const [isValidApk, setIsValidApk] = useState<boolean | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [androidApkUrl, setAndroidApkUrl] = useState<string>('');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstallPWA, setCanInstallPWA] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
   
-  const iosTestFlightUrl = import.meta.env.VITE_IOS_TESTFLIGHT_URL || '';
-  
-  // Check APK availability from env or Supabase Storage
+  // PWA installation prompt handling
   useEffect(() => {
-    const checkApkAvailability = async () => {
-      // First try environment variable
-      let url = import.meta.env.VITE_ANDROID_APK_URL;
-      
-      // If no env variable, try Supabase Storage
-      if (!url) {
-        const { data } = supabase.storage
-          .from('apps')
-          .getPublicUrl('vida-live-latest.apk');
-        url = data.publicUrl;
-      }
-      
-      setAndroidApkUrl(url || '');
-      
-      if (!url) {
-        setIsValidApk(false);
-        return;
-      }
-      
-      // Always enable download if URL exists, with fallback check
-      setIsValidApk(true);
-      
-      try {
-        // Try a lightweight check but don't block on failure
-        const response = await fetch(url, { method: 'GET', mode: 'no-cors' });
-        // If we get here without error, the URL is accessible
-      } catch (error) {
-        console.warn('APK check warning (download still enabled):', error);
-        // Keep download enabled even if check fails
-      }
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstallPWA(true);
     };
 
-    checkApkAvailability();
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setCanInstallPWA(false);
+      toast.success('App instalado com sucesso!');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
+
+  const handlePWAInstall = async () => {
+    if (!deferredPrompt) return;
+    
+    setIsInstalling(true);
+    
+    try {
+      const { outcome } = await deferredPrompt.prompt();
+      
+      if (outcome === 'accepted') {
+        toast.success('Instalação iniciada!');
+      } else {
+        toast.info('Instalação cancelada.');
+      }
+      
+      setDeferredPrompt(null);
+      setCanInstallPWA(false);
+    } catch (error) {
+      toast.error('Erro na instalação. Tente pelo menu do navegador.');
+    } finally {
+      setIsInstalling(false);
+    }
+  };
   
   const generateQRCodeUrl = (url: string) => {
     return `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(url)}`;
   };
 
-  const handleDirectDownload = async (url: string) => {
-    if (isDownloading) return;
-    
-    setIsDownloading(true);
-    
-    try {
-      // Try direct navigation first
-      window.location.href = url;
-      
-      // Show success message after a delay
-      setTimeout(() => {
-        toast.success('Download iniciado! Verifique sua pasta de downloads.');
-        setIsDownloading(false);
-      }, 2000);
-      
-    } catch (error) {
-      // Fallback to creating a download link
-      try {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'vida-live-app.apk';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success('Download iniciado! Verifique sua pasta de downloads.');
-      } catch (fallbackError) {
-        toast.error('Erro ao iniciar download. Tente o link direto abaixo.');
-      }
-      setIsDownloading(false);
-    }
-  };
+  const currentUrl = window.location.origin;
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-6 text-center">
-          <Smartphone className="h-16 w-16 text-primary mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground">Baixar o App</h1>
-          <p className="text-muted-foreground">Tenha o Vida Live sempre com você</p>
+        <div className="mb-6">
+          <BrandHeader 
+            title="Instalar App"
+            subtitle="Tenha o Vida Live sempre com você"
+            className="justify-center text-center"
+          />
         </div>
 
-        {/* Direct Download Links */}
+        {/* PWA Installation */}
         <div className="space-y-4 mb-8">
-          <Card className="border-border">
+          <Card className="border-primary/20 bg-primary/5">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Download className="h-5 w-5 mr-2 text-primary" />
-                Android APK
+              <CardTitle className="flex items-center text-primary">
+                <Download className="h-5 w-5 mr-2" />
+                Instalar App (PWA)
               </CardTitle>
               <CardDescription>
-                Download direto para dispositivos Android
+                Aplicativo web progressivo - funciona em todos os dispositivos
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Download Status Warning */}
-              {isValidApk === false && (
-                <div className="flex items-center gap-2 p-3 mb-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
-                  <div className="text-sm">
-                    <p className="text-destructive font-medium">APK não disponível</p>
-                    <p className="text-muted-foreground">O arquivo APK ainda não foi configurado pelo administrador.</p>
+              {canInstallPWA ? (
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mb-4"
+                  onClick={handlePWAInstall}
+                  disabled={isInstalling}
+                  size="lg"
+                >
+                  {isInstalling ? (
+                    <>
+                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Instalando...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Instalar App (PWA)
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <div className="space-y-4">
+                  {/* Android Instructions */}
+                  <div className="p-4 bg-background rounded-lg border border-border">
+                    <h4 className="font-semibold text-foreground mb-2 flex items-center">
+                      <Smartphone className="h-4 w-4 mr-2 text-primary" />
+                      Android (Chrome/Edge)
+                    </h4>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>Toque no menu (⋮) do navegador</li>
+                      <li>Selecione "Instalar app" ou "Adicionar à tela inicial"</li>
+                      <li>Confirme a instalação</li>
+                    </ol>
+                  </div>
+
+                  {/* iOS Instructions */}
+                  <div className="p-4 bg-background rounded-lg border border-border">
+                    <h4 className="font-semibold text-foreground mb-2 flex items-center">
+                      <Share2 className="h-4 w-4 mr-2 text-primary" />
+                      iPhone/iPad (Safari)
+                    </h4>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>Toque no botão de compartilhar (□↗)</li>
+                      <li>Role e selecione "Adicionar à Tela de Início"</li>
+                      <li>Toque em "Adicionar"</li>
+                    </ol>
+                  </div>
+
+                  {/* Desktop Instructions */}
+                  <div className="p-4 bg-background rounded-lg border border-border">
+                    <h4 className="font-semibold text-foreground mb-2 flex items-center">
+                      <Download className="h-4 w-4 mr-2 text-primary" />
+                      Desktop
+                    </h4>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>Procure o ícone de instalação (⊕) na barra de endereços</li>
+                      <li>Ou use o menu do navegador → "Instalar Vida Live"</li>
+                      <li>Confirme a instalação</li>
+                    </ol>
                   </div>
                 </div>
               )}
               
-              <Button 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mb-4"
-                onClick={() => handleDirectDownload(androidApkUrl)}
-                disabled={isDownloading || isValidApk === false}
-              >
-                {isDownloading ? (
-                  <>
-                    <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                    Baixando...
-                  </>
-                ) : (
-                  <>
-                    <Download className="h-4 w-4 mr-2" />
-                    Baixar APK Diretamente
-                  </>
-                )}
-              </Button>
-              
-              {/* Direct Link Fallback */}
-              {isValidApk !== false && (
-                <div className="mb-4 p-2 bg-muted/50 rounded border text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Se o download não iniciar:</p>
-                  <a 
-                    href={androidApkUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary text-sm underline hover:no-underline"
-                  >
-                    Clique aqui para download direto
-                  </a>
-                </div>
-              )}
-              
-              {/* QR Code for Android APK */}
-              <div className="flex justify-center">
-                <div className="w-32 h-32 bg-muted rounded-lg overflow-hidden">
-                  <img 
-                    src={generateQRCodeUrl(androidApkUrl)} 
-                    alt="QR Code para download Android"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <p className="text-center text-sm text-muted-foreground mt-2">
-                Escaneie para baixar no Android
-              </p>
-              <p className="text-center text-xs text-muted-foreground mt-1">
-                Habilite "Origens desconhecidas" nas configurações
-              </p>
-            </CardContent>
-          </Card>
-
-          {iosTestFlightUrl && (
-            <Card className="border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <ExternalLink className="h-5 w-5 mr-2 text-primary" />
-                  iOS TestFlight
-                </CardTitle>
-                <CardDescription>
-                  Versão beta para iPhone e iPad
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mb-4"
-                  onClick={() => window.open(iosTestFlightUrl, '_blank')}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Abrir TestFlight
-                </Button>
-                
-                {/* QR Code for iOS TestFlight */}
-                <div className="flex justify-center">
-                  <div className="w-32 h-32 bg-muted rounded-lg overflow-hidden">
+              {/* QR Code for easy mobile access */}
+              <div className="flex justify-center mt-6">
+                <div className="text-center">
+                  <div className="w-32 h-32 bg-muted rounded-lg overflow-hidden mx-auto mb-2">
                     <img 
-                      src={generateQRCodeUrl(iosTestFlightUrl)} 
-                      alt="QR Code para TestFlight iOS"
+                      src={generateQRCodeUrl(currentUrl)} 
+                      alt="QR Code para acessar o app"
                       className="w-full h-full object-cover"
                     />
                   </div>
+                  <p className="text-sm text-muted-foreground">
+                    Escaneie para abrir no celular
+                  </p>
                 </div>
-                <p className="text-center text-sm text-muted-foreground mt-2">
-                  Escaneie para abrir no iOS
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Features */}
-        <Card className="border-primary/20 bg-primary/5">
+        <Card className="border-border">
           <CardHeader>
-            <CardTitle className="text-primary">Por que usar o app mobile?</CardTitle>
+            <CardTitle className="text-foreground">Vantagens do App PWA</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 text-sm text-foreground">
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-                Notificações para lembretes de água e refeições
-              </li>
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-                Acesso offline aos seus planos
-              </li>
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-                Timer de exercícios com vibração
-              </li>
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-                Sincronização automática com a nuvem
-              </li>
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-primary rounded-full mr-3"></span>
-                Interface otimizada para toque
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        {/* Installation Instructions */}
-        <Card className="border-border mt-6">
-          <CardHeader>
-            <CardTitle className="text-foreground">Como instalar no Android</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
-              <li>Baixe o arquivo APK clicando no botão acima</li>
-              <li>Vá em Configurações → Segurança → Fontes Desconhecidas</li>
-              <li>Ative a opção "Permitir instalação de aplicativos de fontes desconhecidas"</li>
-              <li>Localize o arquivo baixado e toque nele para instalar</li>
-              <li>Siga as instruções na tela para completar a instalação</li>
-            </ol>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start space-x-3">
+                <Zap className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-foreground">Rápido e Confiável</h4>
+                  <p className="text-sm text-muted-foreground">Carregamento instantâneo e performance nativa</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Wifi className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-foreground">Funciona Offline</h4>
+                  <p className="text-sm text-muted-foreground">Acesso aos seus dados mesmo sem internet</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Timer className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-foreground">Notificações</h4>
+                  <p className="text-sm text-muted-foreground">Lembretes de água, refeições e exercícios</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <Cloud className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-foreground">Sincronização</h4>
+                  <p className="text-sm text-muted-foreground">Dados sempre atualizados em todos os dispositivos</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
