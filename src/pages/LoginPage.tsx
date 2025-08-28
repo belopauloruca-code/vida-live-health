@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -32,7 +33,9 @@ export const LoginPage: React.FC = () => {
         description: "Bem-vindo de volta ao Vida Live",
       });
       
-      navigate('/dashboard');
+      // Redirect to the intended page or default to dashboard
+      const from = location.state?.from || '/dashboard';
+      navigate(from);
     } catch (error: any) {
       toast({
         variant: "destructive",

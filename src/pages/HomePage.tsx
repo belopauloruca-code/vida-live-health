@@ -58,7 +58,7 @@ export const HomePage: React.FC = () => {
             <Button 
               size="lg" 
               className="px-8 py-3 text-lg"
-              onClick={() => window.open('https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09', '_blank')}
+              onClick={() => navigate('/subscription')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Assinar Premium
