@@ -23,6 +23,36 @@ export const SubscriptionPlanPage: React.FC = () => {
     }
   }, [user]);
 
+  // Real-time listener for subscription changes
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('subscription-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'subscribers',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Subscription updated:', payload);
+          loadSubscription();
+          toast({
+            title: "Assinatura atualizada",
+            description: "Seu status de assinatura foi atualizado automaticamente.",
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast]);
+
   const loadSubscription = async () => {
     try {
       const { data, error } = await supabase

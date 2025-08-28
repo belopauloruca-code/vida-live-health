@@ -42,7 +42,7 @@ function App() {
               
               
               {/* Protected user routes */}
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute requirePremium><DashboardPage /></ProtectedRoute>} />
               <Route path="/meal-plans" element={<ProtectedRoute><MealPlansPage /></ProtectedRoute>} />
               <Route path="/exercises" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
               <Route path="/download-app" element={<ProtectedRoute><DownloadAppPage /></ProtectedRoute>} />
