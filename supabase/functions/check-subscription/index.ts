@@ -59,7 +59,11 @@ serve(async (req) => {
         subscription_end: null,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ 
+        subscribed: false, 
+        message: "Nenhum cliente Stripe encontrado",
+        success: true 
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -108,19 +112,31 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
-    return new Response(JSON.stringify({
+      logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    
+    // Return detailed response for better frontend handling
+    const response = {
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
-    }), {
+      subscription_end: subscriptionEnd,
+      message: hasActiveSub 
+        ? `Assinatura ${subscriptionTier} ativa encontrada` 
+        : "Nenhuma assinatura ativa encontrada",
+      success: true
+    };
+    
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in check-subscription", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ 
+      error: errorMessage, 
+      success: false,
+      message: "Erro ao verificar assinatura"
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

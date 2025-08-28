@@ -85,7 +85,53 @@ export const SubscriptionPlanPage: React.FC = () => {
       setRefreshing(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      if (error) {
+        // Handle specific error messages from the function
+        const errorMessage = error.message || 'Erro desconhecido';
+        console.error('Refresh error:', error);
+        
+        if (errorMessage.includes('STRIPE_SECRET_KEY')) {
+          toast({
+            title: "Erro de configuração",
+            description: "Sistema em manutenção. Tente novamente mais tarde.",
+            variant: "destructive",
+          });
+        } else if (errorMessage.includes('Authentication')) {
+          toast({
+            title: "Erro de autenticação",
+            description: "Por favor, faça login novamente.",
+            variant: "destructive",
+          });
+        } else if (errorMessage.includes('not authenticated')) {
+          toast({
+            title: "Não autenticado",
+            description: "Faça login para verificar sua assinatura.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro ao atualizar",
+            description: `${errorMessage}. Tente novamente em alguns instantes.`,
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+      
+      // Check if we received subscription data
+      if (data && typeof data.subscribed !== 'undefined') {
+        if (data.subscribed) {
+          toast({
+            title: "Assinatura encontrada! 🎉",
+            description: `Plano ${data.subscription_tier || 'Premium'} ativo.`,
+          });
+        } else {
+          toast({
+            title: "Nenhuma assinatura ativa",
+            description: "Nenhuma assinatura foi encontrada. Considere assinar um plano.",
+          });
+        }
+      }
       
       // Reload subscription data
       await loadSubscription();
@@ -98,7 +144,7 @@ export const SubscriptionPlanPage: React.FC = () => {
       console.error('Refresh error:', error);
       toast({
         title: "Erro ao atualizar",
-        description: "Tente novamente em alguns instantes.",
+        description: "Erro de conexão. Verifique sua internet e tente novamente.",
         variant: "destructive",
       });
     } finally {
