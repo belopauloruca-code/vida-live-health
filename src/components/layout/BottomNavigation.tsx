@@ -17,21 +17,20 @@ export const BottomNavigation: React.FC = () => {
   ];
 
   return (
-    <div className="fixed top-1/2 left-2 -translate-y-1/2 bg-white border border-gray-200 rounded-xl px-2 py-4 z-50 shadow-lg">
-      <div className="flex flex-col items-center space-y-3">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 z-50">
+      <div className="flex justify-around items-center max-w-lg mx-auto">
         {navItems.map(({ icon: Icon, label, path }) => (
           <button
             key={path}
             onClick={() => navigate(path)}
-            className={`flex flex-col items-center justify-center min-w-[48px] min-h-[48px] p-2 rounded-lg transition-colors ${
+            className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-2 py-1 rounded-lg transition-colors ${
               location.pathname === path
                 ? 'text-green-500 bg-green-50'
                 : 'text-gray-500 hover:text-green-500 hover:bg-green-50'
             }`}
-            title={label}
           >
             <Icon className="h-5 w-5" />
-            <span className="text-xs font-medium mt-1 text-center leading-tight">{label}</span>
+            <span className="text-xs font-medium mt-1">{label}</span>
           </button>
         ))}
       </div>
