@@ -97,7 +97,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Acompanhamento de peso',
         'Suporte por e-mail'
       ],
-      stripeUrl: 'https://buy.stripe.com/8x24gA5NEbJw2Mq0gTB',
+      stripeUrl: 'https://buy.stripe.com/3cI00kfoedRE3QugTB2sM0a',
       icon: CheckCircle
     },
     {
@@ -114,7 +114,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Relatórios de progresso',
         'Suporte prioritário'
       ],
-      stripeUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EielLt',
+      stripeUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09',
       icon: Crown
     },
     {
@@ -131,7 +131,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Lista de compras automática',
         'Acesso antecipado a novidades'
       ],
-      stripeUrl: 'https://buy.stripe.com/14AdRa8ZQ5l81Im0UD',
+      stripeUrl: 'https://buy.stripe.com/fZufZi6RI8xk72G32L2sM0b',
       icon: Star
     }
   ];
