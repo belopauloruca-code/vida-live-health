@@ -4,15 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Crown, Calendar, CreditCard, RefreshCw, CheckCircle } from 'lucide-react';
+import { Crown, Zap, Star, RefreshCw, CheckCircle, ExternalLink } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const SubscriptionPlanPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -23,202 +26,237 @@ export const SubscriptionPlanPage: React.FC = () => {
   const loadSubscription = async () => {
     try {
       const { data, error } = await supabase
-        .from('subscriptions')
+        .from('subscribers')
         .select('*')
         .eq('user_id', user?.id)
-        .eq('status', 'active')
+        .eq('subscribed', true)
         .single();
 
       if (!error && data) {
         setSubscription(data);
+      } else {
+        setSubscription(null);
       }
     } catch (error) {
       console.error('Error loading subscription:', error);
+      setSubscription(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubscribe = () => {
-    navigate('/payment');
-  };
-
-  const handleManageSubscription = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('customer-portal');
-      
-      if (error) throw error;
-      
-      // Open Stripe customer portal in a new tab
-      if (data?.url) {
-        window.open(data.url, '_blank');
-      }
-    } catch (error: any) {
-      console.error('Portal error:', error);
-      // Fallback to generic portal if edge function fails
-      window.open('https://billing.stripe.com/p/login/test_portal', '_blank');
-    }
+  const handleSubscribe = (stripeUrl: string) => {
+    // Open Stripe checkout in a new tab
+    window.open(stripeUrl, '_blank');
   };
 
   const handleRefreshSubscription = async () => {
     try {
-      setLoading(true);
+      setRefreshing(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) throw error;
       
       // Reload subscription data
-      loadSubscription();
+      await loadSubscription();
+      
+      toast({
+        title: "Status atualizado",
+        description: "Informações da assinatura atualizadas com sucesso.",
+      });
     } catch (error: any) {
       console.error('Refresh error:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      setRefreshing(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
+  const plans = [
+    {
+      id: 'basic',
+      name: 'Básico',
+      price: '€6.99',
+      period: '/mês',
+      popular: false,
+      features: [
+        'Plano alimentar personalizado',
+        'Receitas saudáveis',
+        'Acompanhamento de peso',
+        'Suporte por e-mail'
+      ],
+      stripeUrl: 'https://buy.stripe.com/8x24gA5NEbJw2Mq0gTB',
+      icon: CheckCircle
+    },
+    {
+      id: 'premium',
+      name: 'Premium',
+      price: '€12.99',
+      period: '/mês',
+      popular: true,
+      features: [
+        'Tudo do Básico',
+        'Exercícios personalizados',
+        'Planos semanais adaptados',
+        'Acompanhamento nutricional',
+        'Relatórios de progresso',
+        'Suporte prioritário'
+      ],
+      stripeUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EielLt',
+      icon: Crown
+    },
+    {
+      id: 'elite',
+      name: 'Elite',
+      price: '€36.99',
+      period: '/mês',
+      popular: false,
+      features: [
+        'Tudo do Premium',
+        'Consultoria nutricional individual',
+        'Planos adaptados a condições médicas',
+        'Videochamadas com nutricionistas',
+        'Lista de compras automática',
+        'Acesso antecipado a novidades'
+      ],
+      stripeUrl: 'https://buy.stripe.com/14AdRa8ZQ5l81Im0UD',
+      icon: Star
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Plano</h1>
-          <p className="text-gray-600">Gerencie sua assinatura do Vida Live</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Planos de Assinatura</h1>
+          <p className="text-muted-foreground">Escolha o plano ideal para seus objetivos de saúde</p>
         </div>
 
-        {subscription ? (
-          // Active Subscription
-          <Card className="border-green-200 mb-6">
-            <CardHeader className="bg-green-50">
+        {/* Current Subscription Status */}
+        {subscription && (
+          <Card className="border-primary/20 bg-primary/5 mb-6">
+            <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Crown className="h-6 w-6 text-green-500 mr-2" />
+                  <Crown className="h-5 w-5 text-primary mr-2" />
                   <div>
-                    <CardTitle className="text-xl">Plano Premium Ativo</CardTitle>
-                    <CardDescription>Você tem acesso completo ao Vida Live</CardDescription>
+                    <CardTitle className="text-lg">Assinatura Ativa</CardTitle>
+                    <CardDescription>
+                      Plano {subscription.subscription_tier || 'Premium'} • 
+                      {subscription.subscription_end ? 
+                        ` Renova em ${new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}` : 
+                        ' Assinatura ativa'
+                      }
+                    </CardDescription>
                   </div>
                 </div>
-                <Badge className="bg-green-500">
-                  <CheckCircle className="h-4 w-4 mr-1" />
+                <Badge className="bg-primary text-primary-foreground">
+                  <CheckCircle className="h-3 w-3 mr-1" />
                   Ativo
                 </Badge>
               </div>
             </CardHeader>
-            
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Detalhes da Assinatura</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Plano:</span>
-                        <span className="font-medium">Premium Monthly</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Valor:</span>
-                        <span className="font-medium">€5.00/mês</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Status:</span>
-                        <span className="font-medium text-green-600">Ativo</span>
-                      </div>
-                      {subscription.expires_at && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Próxima cobrança:</span>
-                          <span className="font-medium">
-                            {new Date(subscription.expires_at).toLocaleDateString('pt-BR')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Recursos Inclusos</h3>
-                    <ul className="space-y-1 text-sm text-gray-600">
-                      <li>✅ Planos de refeição ilimitados</li>
-                      <li>✅ Biblioteca completa de exercícios</li>
-                      <li>✅ Assistente IA Dr. de Ajuda</li>
-                      <li>✅ Relatórios de progresso</li>
-                      <li>✅ Suporte prioritário</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={handleManageSubscription}
-                  className="flex-1"
-                >
-                  <CreditCard className="h-4 w-4 mr-2" />
-                  Gerenciar Assinatura
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={handleRefreshSubscription}
-                  className="flex-1"
-                  disabled={loading}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Atualizar Status
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          // No Active Subscription
-          <Card className="border-orange-200 mb-6">
-            <CardHeader className="bg-orange-50">
-              <div className="flex items-center">
-                <Calendar className="h-6 w-6 text-orange-500 mr-2" />
-                <div>
-                  <CardTitle className="text-xl">Plano Gratuito</CardTitle>
-                  <CardDescription>Upgrade para Premium e desbloqueie todos os recursos</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">Recursos Atuais (Gratuito)</h3>
-                  <ul className="space-y-1 text-sm text-gray-600">
-                    <li>✅ Dashboard básico</li>
-                    <li>✅ Controle de hidratação</li>
-                    <li>❌ Planos de refeição limitados</li>
-                    <li>❌ Biblioteca completa de exercícios</li>
-                    <li>❌ Assistente IA Dr. de Ajuda</li>
-                  </ul>
-                </div>
-
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-medium text-green-800 mb-2">Upgrade para Premium</h3>
-                  <p className="text-sm text-green-700 mb-3">
-                    Por apenas €5/mês, tenha acesso completo a todos os recursos do Vida Live
-                  </p>
-                  <Button 
-                    onClick={handleSubscribe}
-                    className="bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    <Crown className="h-4 w-4 mr-2" />
-                    Assinar Premium - €5/mês
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
           </Card>
         )}
+
+        {/* Plans Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {plans.map((plan) => {
+            const Icon = plan.icon;
+            const isCurrentPlan = subscription && subscription.subscription_tier === plan.name;
+            
+            return (
+              <Card 
+                key={plan.id} 
+                className={`relative ${plan.popular ? 'border-primary shadow-lg' : 'border-border'} ${isCurrentPlan ? 'bg-primary/5' : ''}`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                      Mais Popular
+                    </Badge>
+                  </div>
+                )}
+                
+                <CardHeader className="text-center pb-4">
+                  <div className="flex justify-center mb-3">
+                    {plan.id === 'basic' && <span className="text-2xl">✨</span>}
+                    {plan.id === 'premium' && <span className="text-2xl">👑</span>}
+                    {plan.id === 'elite' && <span className="text-2xl">⚡</span>}
+                  </div>
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  <div className="mt-2">
+                    <span className="text-3xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-muted-foreground">{plan.period}</span>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <ul className="space-y-2">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-foreground">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Button 
+                    className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={() => handleSubscribe(plan.stripeUrl)}
+                    disabled={isCurrentPlan}
+                  >
+                    {isCurrentPlan ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Plano Atual
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Assinar {plan.name}
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Refresh Button */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Atualizar Status da Assinatura</CardTitle>
+            <CardDescription>
+              Acabou de fazer uma assinatura? Clique abaixo para atualizar seu status.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              variant="outline" 
+              onClick={handleRefreshSubscription}
+              disabled={refreshing}
+              className="w-full sm:w-auto"
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Atualizar Status
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Help Section */}
         <Card>

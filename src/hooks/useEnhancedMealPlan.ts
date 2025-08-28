@@ -91,12 +91,12 @@ export const useEnhancedMealPlan = () => {
           schema: 'public', 
           table: 'meal_plan_items'
         }, 
-        () => {
-          console.log('Meal plan items changed, reloading...');
-          if (currentPlan) {
-            loadPlanItems(currentPlan.id);
-          }
-        }
+         (payload) => {
+           console.log('Meal plan items changed, reloading...', payload);
+           if (currentPlan && payload.new && (payload.new as any).meal_plan_id === currentPlan.id) {
+             loadPlanItems(currentPlan.id);
+           }
+         }
       )
       .subscribe();
 
@@ -136,7 +136,7 @@ export const useEnhancedMealPlan = () => {
         .from('meal_plans')
         .select('*')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('start_date', { ascending: false })
         .limit(1);
 
       if (error) {
@@ -154,12 +154,15 @@ export const useEnhancedMealPlan = () => {
       }
     } catch (error) {
       console.error('Error loading meal plan:', error);
-      const errorMessage = error instanceof Error ? error.message : "Tente recarregar a página.";
-      toast({
-        title: "Erro ao carregar plano",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // Only show error toast if it's not just "no plans found"
+      if (error instanceof Error && !error.message.includes('No rows')) {
+        const errorMessage = error.message || "Tente recarregar a página.";
+        toast({
+          title: "Erro ao carregar plano",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }

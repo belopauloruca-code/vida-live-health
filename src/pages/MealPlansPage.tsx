@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar } from '@/components/ui/calendar';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Clock, Zap, Calendar as CalendarIcon, Crown } from 'lucide-react';
+import { Clock, Zap, Crown } from 'lucide-react';
 import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +29,7 @@ export const MealPlansPage: React.FC = () => {
   
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  
 
   const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
   const mealTypes = ['Café', 'Almoço', 'Lanche', 'Jantar'];
@@ -82,50 +81,6 @@ export const MealPlansPage: React.FC = () => {
         {/* Trial Banner */}
         <TrialBanner />
 
-        {/* Calendar Section */}
-        <Card className="mb-6">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5 text-primary" />
-              <CardTitle>Plano Atual</CardTitle>
-            </div>
-            <CardDescription>
-              {currentPlan ? `Plano ativo: ${formatDateRange()}` : 'Nenhum plano ativo'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              modifiers={{
-                hasPlan: (date) => currentPlan && 
-                  date >= new Date(currentPlan.start_date) && 
-                  date <= new Date(currentPlan.end_date)
-              }}
-              modifiersStyles={{
-                hasPlan: { 
-                  backgroundColor: 'hsl(var(--primary))', 
-                  color: 'hsl(var(--primary-foreground))',
-                  borderRadius: '6px'
-                }
-              }}
-              className="rounded-md border w-fit mx-auto"
-            />
-            <div className="mt-4 text-center">
-              <div className="flex items-center justify-center gap-4 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded bg-primary"></div>
-                  <span>Com plano</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded border border-border"></div>
-                  <span>Sem plano</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Plan Summary */}
         <Card className="mb-6 border-primary/20 bg-primary/5">
