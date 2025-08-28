@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, Droplets, Utensils, Target, Heart, Timer } from 'lucide-react';
+import { Activity, Droplets, Utensils, Target, Heart, Timer, ExternalLink } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -57,10 +57,11 @@ export const HomePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
             <Button 
               size="lg" 
-              className="bg-green-500 hover:bg-green-600 text-white px-8 py-3 text-lg"
-              onClick={() => navigate('/payment')}
+              className="px-8 py-3 text-lg"
+              onClick={() => window.open('https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09', '_blank')}
             >
-              Assinar plano — €5/mês
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Assinar Premium
             </Button>
             <Button 
               variant="outline" 
