@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -9,11 +10,12 @@ import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Droplets, Target, Calendar, Activity, Plus } from 'lucide-react';
+import { Droplets, Target, Calendar, Activity, Plus, LogOut } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [hydrationToday, setHydrationToday] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3850);
@@ -80,6 +82,26 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso",
+      });
+      
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao sair",
+        description: error.message,
+      });
+    }
+  };
+
   const waterProgress = Math.min((hydrationToday / waterGoal) * 100, 100);
   const cupsRemaining = Math.max(0, Math.ceil((waterGoal - hydrationToday) / 250));
   const cupsDrunk = Math.floor(hydrationToday / 250);
@@ -103,12 +125,21 @@ export const DashboardPage: React.FC = () => {
 
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-start">
           <BrandHeader 
             title={`Olá, ${profile?.name || 'Usuário'}!`}
             subtitle="Como está sua jornada hoje?"
             showLogo={false}
           />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
         </div>
         
         <TrialBanner />
