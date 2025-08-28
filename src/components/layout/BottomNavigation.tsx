@@ -17,7 +17,7 @@ export const BottomNavigation: React.FC = () => {
   ];
 
   return (
-    <div className="fixed top-1/2 right-2 -translate-y-1/2 bg-white border border-gray-200 rounded-xl px-2 py-4 z-50 shadow-lg">
+    <div className="fixed top-1/2 left-2 -translate-y-1/2 bg-white border border-gray-200 rounded-xl px-2 py-4 z-50 shadow-lg">
       <div className="flex flex-col items-center space-y-3">
         {navItems.map(({ icon: Icon, label, path }) => (
           <button
