@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Calendar, Activity, Download, User, MessageCircle, Lock } from 'lucide-react';
+import { Home, Calendar, Activity, Download, User, MessageCircle, Lock, Utensils } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 export const BottomNavigation: React.FC = () => {
@@ -12,6 +12,7 @@ export const BottomNavigation: React.FC = () => {
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard', requiresPremium: false, requiredTier: undefined },
     { icon: Calendar, label: 'Ver Plano', path: '/subscription', requiresPremium: false, requiredTier: undefined },
+    { icon: Utensils, label: 'Gerar Refeição', path: '/meal-plans', requiresPremium: true, requiredTier: 'basic' as const },
     { icon: Activity, label: 'Exercícios', path: '/exercises', requiresPremium: true, requiredTier: 'basic' as const },
     { icon: MessageCircle, label: 'Dr. Ajuda', path: '/ai-assistant', requiresPremium: true, requiredTier: 'premium' as const },
     { icon: Download, label: 'App', path: '/download-app', requiresPremium: true, requiredTier: 'basic' as const },
