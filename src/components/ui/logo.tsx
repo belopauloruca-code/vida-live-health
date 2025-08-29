@@ -20,7 +20,7 @@ export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
   return (
     <img
       src={logoSrc}
-      alt="Vida Live"
+      alt="Vida Leve"
       className={`${sizeClasses[size]} object-contain ${className}`}
       loading="lazy"
       onError={(e) => {

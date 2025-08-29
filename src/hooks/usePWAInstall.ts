@@ -55,10 +55,10 @@ export const usePWAInstall = () => {
       setCanInstallPWA(false);
       setIsInstalled(true);
       setIsInstalling(false);
-      toast({
-        title: "Instalação concluída!",
-        description: "Seja bem-vindo à Vida Leve! O app está pronto para usar.",
-      });
+        toast({
+          title: "Instalação concluída!",
+          description: "Bem-vindo ao Vida Leve! O app está pronto para usar.",
+        });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -97,7 +97,7 @@ export const usePWAInstall = () => {
     // Show installing toast
     toast({
       title: "Instalando Vida Leve...",
-      description: "Por favor, aguarde enquanto o app está sendo instalado.",
+      description: "Aguarde enquanto o app está sendo instalado.",
     });
     
     try {

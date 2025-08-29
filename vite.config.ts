@@ -35,10 +35,10 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       manifest: {
-        name: 'Vida Live Health',
-        short_name: 'Vida Live',
-        description: 'Your complete health and wellness companion',
-        theme_color: '#0ea5e9',
+        name: 'Vida Leve',
+        short_name: 'Vida Leve',
+        description: 'Seu companheiro completo de saúde e bem-estar',
+        theme_color: '#4CAF50',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',

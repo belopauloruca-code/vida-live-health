@@ -1,11 +1,11 @@
 {
-  "name": "Vida Live Health",
-  "short_name": "Vida Live",
-  "description": "Your complete health and wellness companion",
+  "name": "Vida Leve",
+  "short_name": "Vida Leve",
+  "description": "Seu companheiro completo de saúde e bem-estar",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0ea5e9",
+  "theme_color": "#4CAF50",
   "orientation": "portrait-primary",
   "icons": [
     {
