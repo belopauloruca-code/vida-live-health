@@ -4,6 +4,7 @@ export interface DrAjudaResponse {
 }
 
 export interface DrAjudaResponseSystem {
+  greetings: Record<string, string[]>;
   topics: DrAjudaResponse[];
   thankYouResponses: string[];
   fallbackResponses: string[];
@@ -19,6 +20,26 @@ export const normalizeText = (text: string): string => {
 };
 
 export const drAjudaResponses: DrAjudaResponseSystem = {
+  greetings: {
+    'bom dia': [
+      '🌅 Bom dia! Que alegria te ver aqui! Como posso te ajudar hoje a cuidar melhor da sua saúde?',
+      '☀️ Bom dia, querido(a)! Espero que tenha acordado com energia! Em que posso te apoiar hoje?',
+      '🌻 Bom dia! Que este dia seja repleto de escolhas saudáveis! Como posso te ajudar?',
+      '💛 Bom dia! Pronto(a) para mais um dia de autocuidado? O que posso fazer por você?'
+    ],
+    'boa tarde': [
+      '🌤️ Boa tarde! Como está sendo seu dia? Em que posso te ajudar nesta tarde?',
+      '☀️ Boa tarde, querido(a)! Espero que esteja tendo um dia maravilhoso! Como posso te apoiar?',
+      '🌺 Boa tarde! Que tal aproveitar este momento para cuidar de você? O que posso fazer por você?',
+      '💙 Boa tarde! Sempre um prazer te ver aqui! Como posso te ajudar hoje?'
+    ],
+    'boa noite': [
+      '🌙 Boa noite! Que bom te encontrar aqui! Como posso te ajudar nesta noite?',
+      '⭐ Boa noite, querido(a)! Espero que tenha tido um dia incrível! Em que posso te apoiar?',
+      '🌃 Boa noite! Hora perfeita para planejar hábitos saudáveis! Como posso te ajudar?',
+      '💜 Boa noite! Sempre aqui para te apoiar! O que posso fazer por você hoje?'
+    ]
+  },
   topics: [
     {
       triggers: ['perder peso', 'emagrecer', 'saudável', 'de forma saudável', 'peso saudável'],
@@ -80,6 +101,13 @@ let usedResponsesPerTopic: Map<string, Set<string>> = new Map();
 
 export const getReply = (message: string): string => {
   const normalizedMessage = normalizeText(message);
+  
+  // Check for greetings first (highest priority)
+  for (const [greeting, responses] of Object.entries(drAjudaResponses.greetings)) {
+    if (normalizedMessage.includes(normalizeText(greeting))) {
+      return getUniqueResponse(responses, greeting);
+    }
+  }
   
   // Check for thank you messages
   if (normalizedMessage.includes('obrigado') || normalizedMessage.includes('obrigada') || normalizedMessage.includes('brigado')) {
