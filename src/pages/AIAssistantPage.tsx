@@ -1,15 +1,16 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { MessageCircle, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, Send, Sparkles, Smile, Paperclip, Mic } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { getReply } from '@/data/drAjudaResponses';
 import { useToast } from '@/hooks/use-toast';
+import { getEmbedSource } from '@/utils/videoUtils';
 
 interface Message {
   id: string;
@@ -18,12 +19,25 @@ interface Message {
   timestamp: Date;
 }
 
+// Typing indicator component
+const TypingIndicator: React.FC = () => (
+  <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-white border border-border">
+    <div className="flex items-center space-x-1" aria-label="Digitando...">
+      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+    </div>
+  </div>
+);
+
 export const AIAssistantPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const quickSuggestions = [
     "Como perder peso de forma saudável?",
@@ -150,6 +164,75 @@ export const AIAssistantPage: React.FC = () => {
     setTimeout(() => sendMessage(), 100);
   };
 
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, loading]);
+
+  // Auto-expand textarea
+  const handleTextareaInput = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  };
+
+  // Enhanced key press handling
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  // Detect and render video content
+  const renderMessageContent = (content: string) => {
+    const urlRegex = /https?:\/\/\S+/g;
+    const urls = content.match(urlRegex);
+    
+    if (!urls || urls.length === 0) {
+      return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+    }
+
+    const videoUrl = urls.find(url => {
+      const source = getEmbedSource(url);
+      return source.type !== 'unknown';
+    });
+
+    if (!videoUrl) {
+      return <p className="text-sm whitespace-pre-wrap">{content}</p>;
+    }
+
+    const source = getEmbedSource(videoUrl);
+    
+    return (
+      <div>
+        <p className="text-sm whitespace-pre-wrap">{content}</p>
+        {source.type !== 'unknown' && (
+          <div className="mt-2 aspect-video rounded-lg overflow-hidden bg-black">
+            {source.type === 'file' ? (
+              <video controls className="w-full h-full">
+                <source src={source.src} type="video/mp4" />
+                Seu navegador não suporta o elemento de vídeo.
+              </video>
+            ) : (
+              <iframe
+                src={source.src}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                title="Vídeo embarcado"
+              />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto p-4 max-w-4xl">
@@ -207,7 +290,7 @@ export const AIAssistantPage: React.FC = () => {
         {/* Messages */}
         <Card className="mb-6">
           <CardContent className="p-0">
-            <div className="h-96 overflow-y-auto p-4 space-y-4">
+            <div ref={scrollRef} className="h-96 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -229,7 +312,7 @@ export const AIAssistantPage: React.FC = () => {
                           : 'bg-primary text-primary-foreground rounded-br-sm'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {renderMessageContent(message.content)}
                       <span className="text-xs opacity-70 mt-1 block">
                         {message.timestamp.toLocaleTimeString([], {
                           hour: '2-digit',
@@ -250,16 +333,7 @@ export const AIAssistantPage: React.FC = () => {
                         DA
                       </AvatarFallback>
                     </Avatar>
-                    <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-white border border-border text-foreground">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm">Dr. Ajuda está digitando...</span>
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </div>
+                    <TypingIndicator />
                   </div>
                 </div>
               )}
@@ -267,29 +341,43 @@ export const AIAssistantPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Input */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex space-x-2">
-              <Textarea
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Digite sua pergunta sobre saúde e bem-estar..."
-                onKeyPress={handleKeyPress}
-                disabled={loading}
-                className="flex-1 min-h-[44px] max-h-32 resize-none"
-                rows={1}
-              />
-              <Button 
-                onClick={sendMessage} 
-                disabled={loading || !inputMessage.trim()}
-                className="px-6"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* WhatsApp-style Input */}
+        <div className="flex items-end gap-3 p-4">
+          <div className="flex items-center gap-2 flex-1 bg-muted rounded-full px-4 py-2">
+            <Smile className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            <Textarea
+              ref={textareaRef}
+              value={inputMessage}
+              onChange={(e) => {
+                setInputMessage(e.target.value);
+                handleTextareaInput();
+              }}
+              onInput={handleTextareaInput}
+              placeholder="Escrever uma mensagem"
+              onKeyDown={handleKeyDown}
+              disabled={loading}
+              rows={1}
+              className="flex-1 bg-transparent border-0 focus:ring-0 resize-none min-h-[40px] max-h-40 py-2 px-0"
+            />
+            <Paperclip className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          </div>
+          {inputMessage.trim() ? (
+            <Button 
+              onClick={sendMessage} 
+              disabled={loading}
+              className="rounded-full h-12 w-12 p-0"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          ) : (
+            <button 
+              type="button" 
+              className="rounded-full h-12 w-12 grid place-items-center bg-primary text-primary-foreground/90 hover:bg-primary/90 transition-colors"
+            >
+              <Mic className="h-5 w-5" />
+            </button>
+          )}
+        </div>
 
         {/* Disclaimer */}
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
