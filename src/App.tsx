@@ -15,6 +15,7 @@ import { MealPlansPage } from '@/pages/MealPlansPage';
 import { ExercisesPage } from '@/pages/ExercisesPage';
 import { DownloadAppPage } from '@/pages/DownloadAppPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { AIAssistantPage } from '@/pages/AIAssistantPage';
 import { PaymentPage } from '@/pages/PaymentPage';
@@ -48,6 +49,7 @@ function App() {
               <Route path="/meal-plans" element={<ProtectedRoute requireTier="basic"><MealPlansPage /></ProtectedRoute>} />
               <Route path="/exercises" element={<ProtectedRoute requireTier="basic"><ExercisesPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute requireTier="basic"><ProfilePage /></ProtectedRoute>} />
+              <Route path="/reports" element={<ProtectedRoute requireTier="basic"><ReportsPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/ai-assistant" element={<ProtectedRoute requireTier="premium"><AIAssistantPage /></ProtectedRoute>} />
               <Route path="/subscription" element={<ProtectedRoute><SubscriptionPlanPage /></ProtectedRoute>} />

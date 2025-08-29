@@ -44,22 +44,26 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({ profile, onProfileUpda
     
     setLoading(true);
     try {
-      const { error } = await supabase
+      const profileData = {
+        id: user.id,
+        name: formData.name,
+        age: formData.age ? parseInt(formData.age) : null,
+        sex: formData.sex,
+        height_cm: formData.height_cm ? parseInt(formData.height_cm) : null,
+        weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
+        activity_level: formData.activity_level,
+        goal: formData.goal,
+        wake_time: formData.wake_time || null,
+        sleep_time: formData.sleep_time || null,
+        work_hours: formData.work_hours || null,
+        water_goal_ml: formData.water_goal_ml ? parseInt(formData.water_goal_ml) : 3850,
+      };
+
+      const { data, error } = await supabase
         .from('profiles')
-        .update({
-          name: formData.name,
-          age: formData.age ? parseInt(formData.age) : null,
-          sex: formData.sex,
-          height_cm: formData.height_cm ? parseInt(formData.height_cm) : null,
-          weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
-          activity_level: formData.activity_level,
-          goal: formData.goal,
-          wake_time: formData.wake_time,
-          sleep_time: formData.sleep_time,
-          work_hours: formData.work_hours,
-          water_goal_ml: formData.water_goal_ml ? parseInt(formData.water_goal_ml) : 3850,
-        })
-        .eq('id', user.id);
+        .upsert(profileData, { onConflict: 'id' })
+        .select()
+        .single();
 
       if (error) throw error;
 

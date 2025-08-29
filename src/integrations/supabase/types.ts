@@ -98,6 +98,51 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_user_reports: {
+        Row: {
+          created_at: string
+          exercises_completed: number | null
+          id: string
+          kcal_burned: number | null
+          notes: string | null
+          planned_meals: number | null
+          report_date: string
+          sleep_hours: number | null
+          updated_at: string
+          user_id: string
+          water_consumed_ml: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          created_at?: string
+          exercises_completed?: number | null
+          id?: string
+          kcal_burned?: number | null
+          notes?: string | null
+          planned_meals?: number | null
+          report_date: string
+          sleep_hours?: number | null
+          updated_at?: string
+          user_id: string
+          water_consumed_ml?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          created_at?: string
+          exercises_completed?: number | null
+          id?: string
+          kcal_burned?: number | null
+          notes?: string | null
+          planned_meals?: number | null
+          report_date?: string
+          sleep_hours?: number | null
+          updated_at?: string
+          user_id?: string
+          water_consumed_ml?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       dr_ajuda_messages: {
         Row: {
           content: string
