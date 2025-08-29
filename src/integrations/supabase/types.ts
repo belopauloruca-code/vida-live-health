@@ -68,6 +68,36 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_tips: {
+        Row: {
+          active: boolean
+          created_at: string
+          day_of_week: number
+          id: string
+          tip_category: string | null
+          tip_text: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          day_of_week: number
+          id?: string
+          tip_category?: string | null
+          tip_text: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          tip_category?: string | null
+          tip_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dr_ajuda_messages: {
         Row: {
           content: string

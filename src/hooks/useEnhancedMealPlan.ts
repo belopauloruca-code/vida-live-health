@@ -57,7 +57,7 @@ export const useEnhancedMealPlan = () => {
   useEffect(() => {
     if (user) {
       loadRecipes();
-      loadCurrentPlan();
+      checkAndGenerateWeeklyPlan();
       subscribeToRealTimeUpdates();
     }
   }, [user]);
@@ -197,88 +197,123 @@ export const useEnhancedMealPlan = () => {
     }
   };
 
-  const generateMealPlan = async (dailyKcal: number, days: number = 7) => {
-    if (!user) return;
+  // Helper functions for week calculation
+  const getWeekStart = (date: Date): Date => {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    return new Date(date.setDate(diff));
+  };
 
+  const getWeekEnd = (date: Date): Date => {
+    const start = getWeekStart(new Date(date));
+    return new Date(start.getTime() + 6 * 24 * 60 * 60 * 1000);
+  };
+
+  const checkAndGenerateWeeklyPlan = async () => {
+    if (!user) return;
+    
     try {
-      setGenerating(true);
+      setLoading(true);
       
-      console.log('Starting meal plan generation...', { dailyKcal, days, recipesCount: recipes.length });
+      const today = new Date();
+      const currentWeekStart = getWeekStart(new Date(today));
+      const currentWeekEnd = getWeekEnd(new Date(today));
       
-      if (recipes.length === 0) {
-        toast({
-          title: "Nenhuma receita disponível",
-          description: "Adicione algumas receitas antes de gerar um plano.",
-          variant: "destructive",
-        });
+      // Check if there's a valid meal plan for current week
+      const { data: plans, error } = await supabase
+        .from('meal_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .lte('start_date', today.toISOString().split('T')[0])
+        .gte('end_date', today.toISOString().split('T')[0])
+        .order('start_date', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('Error checking meal plan:', error);
         return;
       }
 
-      // Delete existing plan if any
-      if (currentPlan) {
-        await supabase.from('meal_plans').delete().eq('id', currentPlan.id);
+      if (plans && plans.length > 0) {
+        // Valid plan exists
+        setCurrentPlan(plans[0]);
+        await loadPlanItems(plans[0].id);
+      } else {
+        // No valid plan, generate one automatically
+        console.log('No valid meal plan found, generating weekly plan...');
+        await generateWeeklyMealPlan();
       }
+    } catch (error) {
+      console.error('Error in checkAndGenerateWeeklyPlan:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Create new meal plan
-      const startDate = new Date().toISOString().split('T')[0];
-      const endDate = new Date(Date.now() + (days - 1) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const generateWeeklyMealPlan = async (dailyKcal: number = 2000) => {
+    if (!user) return;
+    
+    try {
+      setGenerating(true);
       
+      // Delete existing meal plans for this user
+      await supabase
+        .from('meal_plans')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Create new weekly meal plan (Monday to Sunday)
+      const today = new Date();
+      const startDate = getWeekStart(new Date(today));
+      const endDate = getWeekEnd(new Date(today));
+
       const { data: newPlan, error: planError } = await supabase
         .from('meal_plans')
         .insert({
           user_id: user.id,
-          start_date: startDate,
-          end_date: endDate,
           daily_kcal: dailyKcal,
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
           meals_per_day: 4
         })
         .select()
         .single();
 
-      if (planError) throw planError;
+      if (planError) {
+        console.error('Error creating meal plan:', planError);
+        return;
+      }
 
-      console.log('Created meal plan:', newPlan);
-
-      // Generate meal plan items
+      // Generate meal plan items for 7 days
       const mealTypes = ['Café', 'Almoço', 'Lanche', 'Jantar'];
-      const kcalPerMeal = Math.floor(dailyKcal / 4);
-      
-      const planItems: Omit<MealPlanItem, 'id'>[] = [];
-      let repeatedRecipeCount = 0;
+      const targetKcalPerMeal = Math.floor(dailyKcal / 4);
+      const tolerance = 100; // ±100 kcal tolerance
 
-      for (let dayIndex = 0; dayIndex < days; dayIndex++) {
+      const planItems = [];
+
+      for (let day = 0; day < 7; day++) {
         for (const mealType of mealTypes) {
-          // Try to find a recipe for this meal type
-          let availableRecipes = recipes.filter(r => normalizeMealType(r.meal_type) === mealType);
-          
-          // If no recipes for this meal type, use any available recipe
-          if (availableRecipes.length === 0) {
-            availableRecipes = recipes;
-            repeatedRecipeCount++;
-          }
-          
-          // Select a recipe (random or based on calories)
-          const targetKcal = kcalPerMeal;
-          let selectedRecipe = availableRecipes.find(r => Math.abs(r.kcal - targetKcal) < 100);
-          
-          if (!selectedRecipe) {
-            // If no recipe close to target calories, pick any available
-            selectedRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
-            repeatedRecipeCount++;
-          }
+          // Get recipes for this meal type within calorie range
+          const { data: availableRecipes } = await supabase
+            .from('recipes')
+            .select('*')
+            .eq('meal_type', normalizeMealType(mealType))
+            .gte('kcal', targetKcalPerMeal - tolerance)
+            .lte('kcal', targetKcalPerMeal + tolerance);
 
-          if (selectedRecipe) {
+          if (availableRecipes && availableRecipes.length > 0) {
+            // Pick a random recipe
+            const randomRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
+            
             planItems.push({
               meal_plan_id: newPlan.id,
-              day_index: dayIndex,
-              meal_type: normalizeMealType(mealType),
-              recipe_id: selectedRecipe.id
+              day_index: day,
+              meal_type: mealType,
+              recipe_id: randomRecipe.id
             });
           }
         }
       }
-
-      console.log('Generated plan items:', planItems);
 
       // Insert all plan items
       if (planItems.length > 0) {
@@ -287,30 +322,24 @@ export const useEnhancedMealPlan = () => {
           .insert(planItems);
 
         if (itemsError) {
-          console.error('Error inserting plan items:', itemsError);
-          throw itemsError;
+          console.error('Error creating meal plan items:', itemsError);
+          return;
         }
       }
 
-      // Show success message
-      toast({
-        title: "Plano Gerado! 🎉",
-        description: "Seu novo plano semanal está pronto!",
-      });
-
-      // Reload the current plan
-      await loadCurrentPlan();
+      // Set the new plan and load its items
+      setCurrentPlan(newPlan);
+      await loadPlanItems(newPlan.id);
       
     } catch (error) {
-      console.error('Error generating meal plan:', error);
-      toast({
-        title: "Erro ao gerar plano",
-        description: error instanceof Error ? error.message : "Tente novamente.",
-        variant: "destructive",
-      });
+      console.error('Error generating weekly meal plan:', error);
     } finally {
       setGenerating(false);
     }
+  };
+
+  const generateMealPlan = async (dailyKcal: number, days: number = 7) => {
+    await generateWeeklyMealPlan(dailyKcal);
   };
 
   return {
@@ -320,6 +349,8 @@ export const useEnhancedMealPlan = () => {
     loading,
     generating,
     generateMealPlan,
-    loadCurrentPlan
+    generateWeeklyMealPlan,
+    loadCurrentPlan,
+    checkAndGenerateWeeklyPlan
   };
 };

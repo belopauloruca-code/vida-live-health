@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
+import { DailyTip } from '@/components/ui/daily-tip';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { Clock, Zap, Crown, Coffee, UtensilsCrossed, Cookie, Utensils } from 'lucide-react';
 import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
@@ -22,13 +23,13 @@ export const MealPlansPage: React.FC = () => {
     planItems,
     loading,
     generating,
-    generateMealPlan,
-    loadCurrentPlan
+    generateWeeklyMealPlan
   } = useEnhancedMealPlan();
   const { hasPremiumAccess } = usePremiumAccess();
   
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isRecipeDialogOpen, setIsRecipeDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('');
   
 
   const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
@@ -49,8 +50,37 @@ export const MealPlansPage: React.FC = () => {
     }
   };
 
+  // Set active tab based on current day
   useEffect(() => {
-    loadCurrentPlan();
+    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const today = new Date().getDay();
+    setActiveTab(dayNames[today]);
+  }, []);
+
+  // Set up automatic day switching at midnight
+  useEffect(() => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    const timeUntilMidnight = tomorrow.getTime() - now.getTime();
+    
+    const timer = setTimeout(() => {
+      const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const newDay = new Date().getDay();
+      setActiveTab(dayNames[newDay]);
+      
+      // Set up daily timer for subsequent days
+      const dailyTimer = setInterval(() => {
+        const currentDay = new Date().getDay();
+        setActiveTab(dayNames[currentDay]);
+      }, 24 * 60 * 60 * 1000); // 24 hours
+      
+      return () => clearInterval(dailyTimer);
+    }, timeUntilMidnight);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const handleViewRecipe = (recipe: any) => {
@@ -63,7 +93,7 @@ export const MealPlansPage: React.FC = () => {
   };
 
   const handleGeneratePlan = () => {
-    generateMealPlan(1800, 7); // 1800 kcal por 7 dias
+    generateWeeklyMealPlan(1800); // 1800 kcal for the week
   };
 
   const getWeekStartDate = (date: Date) => {
@@ -95,6 +125,11 @@ export const MealPlansPage: React.FC = () => {
 
         {/* Trial Banner */}
         <TrialBanner />
+        
+        {/* Daily Tip */}
+        <div className="mb-6">
+          <DailyTip />
+        </div>
 
 
         {/* Plan Summary */}
@@ -150,17 +185,17 @@ export const MealPlansPage: React.FC = () => {
 
         {/* Weekly Tabs */}
         {currentPlan && planItems.length > 0 ? (
-          <Tabs defaultValue="0" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-7 mb-4">
               {weekDays.map((day, index) => (
-                <TabsTrigger key={index} value={index.toString()} className="text-xs">
+                <TabsTrigger key={index} value={day} className="text-xs">
                   {day}
                 </TabsTrigger>
               ))}
             </TabsList>
 
             {weekDays.map((day, dayIndex) => (
-              <TabsContent key={dayIndex} value={dayIndex.toString()}>
+              <TabsContent key={dayIndex} value={day}>
                 <div className="space-y-4">
                   {getMealsForDay(dayIndex).length > 0 ? (
                     getMealsForDay(dayIndex).map((mealItem, index) => (

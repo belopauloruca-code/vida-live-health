@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
+import { DailyTip } from '@/components/ui/daily-tip';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -245,6 +246,11 @@ export const DashboardPage: React.FC = () => {
         </div>
         
         <TrialBanner />
+        
+        {/* Daily Tip Section */}
+        <div className="mb-6">
+          <DailyTip />
+        </div>
 
         {/* Main Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
