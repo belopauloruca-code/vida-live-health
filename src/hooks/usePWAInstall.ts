@@ -8,6 +8,7 @@ export const usePWAInstall = () => {
   const [isInstalled, setIsInstalled] = useState(false);
   const [platform, setPlatform] = useState<'ios' | 'android' | 'desktop' | 'unknown'>('unknown');
   const [isInIframe, setIsInIframe] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
   // Detect platform and installation status
   useEffect(() => {
@@ -27,6 +28,10 @@ export const usePWAInstall = () => {
     // Check if in iframe (preview mode)
     const inIframe = window.self !== window.top;
     setIsInIframe(inIframe);
+
+    // Detect in-app browsers (WhatsApp, Instagram, Facebook, etc.)
+    const inAppBrowser = /wv|fban|fbav|fbsv|instagram|whatsapp|line|twitter|tiktok|linkedin|telegram/.test(userAgent);
+    setIsInAppBrowser(inAppBrowser);
 
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
@@ -66,6 +71,25 @@ export const usePWAInstall = () => {
   }, []);
 
   const installPWA = useCallback(async () => {
+    // If in-app browser on Android, redirect to Chrome
+    if (platform === 'android' && isInAppBrowser && !isInIframe) {
+      toast({
+        title: "Abrindo no Chrome...",
+        description: "Para instalar o app, você será redirecionado para o Chrome.",
+      });
+      
+      const currentUrl = window.location.href;
+      const chromeIntent = `intent://${window.location.host}${window.location.pathname}${window.location.search}#Intent;scheme=https;package=com.android.chrome;end`;
+      
+      try {
+        window.location.href = chromeIntent;
+      } catch {
+        // Fallback to direct URL
+        window.open(currentUrl, '_blank');
+      }
+      return false;
+    }
+
     if (!deferredPrompt) return false;
     
     setIsInstalling(true);
@@ -103,7 +127,7 @@ export const usePWAInstall = () => {
       setDeferredPrompt(null);
       setCanInstallPWA(false);
     }
-  }, [deferredPrompt]);
+  }, [deferredPrompt, platform, isInAppBrowser, isInIframe]);
 
   const getInstallInstructions = useCallback(() => {
     const baseInstructions = {
@@ -112,7 +136,12 @@ export const usePWAInstall = () => {
         'Role e selecione "Adicionar à Tela de Início"',
         'Toque em "Adicionar"'
       ],
-      android: [
+      android: isInAppBrowser ? [
+        'Abra este app no Chrome',
+        'Toque no menu (⋮) do navegador',
+        'Selecione "Instalar app" ou "Adicionar à tela inicial"',
+        'Confirme a instalação'
+      ] : [
         'Toque no menu (⋮) do navegador',
         'Selecione "Instalar app" ou "Adicionar à tela inicial"',
         'Confirme a instalação'
@@ -127,7 +156,7 @@ export const usePWAInstall = () => {
 
     const instructions = baseInstructions[platform] || baseInstructions.default;
     
-    if (isInIframe) {
+    if (isInIframe && platform === 'desktop') {
       return [
         'Abra o app em uma nova aba para instalar',
         ...instructions
@@ -135,7 +164,7 @@ export const usePWAInstall = () => {
     }
     
     return instructions;
-  }, [platform, isInIframe]);
+  }, [platform, isInIframe, isInAppBrowser]);
 
   return {
     canInstallPWA,
@@ -143,6 +172,7 @@ export const usePWAInstall = () => {
     isInstalled,
     platform,
     isInIframe,
+    isInAppBrowser,
     installPWA,
     getInstallInstructions
   };

@@ -15,11 +15,11 @@ export const InstallAppButton: React.FC<InstallAppButtonProps> = ({
   size = 'default',
   variant = 'default'
 }) => {
-  const { canInstallPWA, isInstalling, isInstalled, platform, isInIframe, installPWA, getInstallInstructions } = usePWAInstall();
+  const { canInstallPWA, isInstalling, isInstalled, platform, isInIframe, isInAppBrowser, installPWA, getInstallInstructions } = usePWAInstall();
   const [showInstructions, setShowInstructions] = useState(false);
 
   const handleInstallClick = async () => {
-    if (canInstallPWA) {
+    if (canInstallPWA || (platform === 'android' && isInAppBrowser)) {
       await installPWA();
     } else {
       setShowInstructions(true);
@@ -102,7 +102,7 @@ export const InstallAppButton: React.FC<InstallAppButtonProps> = ({
                 ))}
               </ol>
             </div>
-            {isInIframe && (
+            {isInIframe && platform === 'desktop' && (
               <Button 
                 variant="default" 
                 className="w-full mb-2" 
