@@ -21,6 +21,7 @@ import { PaymentPage } from '@/pages/PaymentPage';
 import { PaymentSuccessPage } from '@/pages/PaymentSuccessPage';
 import { SubscriptionPlanPage } from '@/pages/SubscriptionPlanPage';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
+import { AdminLoginPage } from '@/pages/admin/AdminLoginPage';
 import './App.css';
 
 const queryClient = new QueryClient();
@@ -50,6 +51,9 @@ function App() {
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
               <Route path="/ai-assistant" element={<ProtectedRoute requireTier="premium"><AIAssistantPage /></ProtectedRoute>} />
               <Route path="/subscription" element={<ProtectedRoute><SubscriptionPlanPage /></ProtectedRoute>} />
+              
+              {/* Admin login route (no protection needed) */}
+              <Route path="/admin/login" element={<AdminLoginPage />} />
               
               {/* Admin routes */}
               <Route path="/admin/*" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />

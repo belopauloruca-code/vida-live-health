@@ -9,9 +9,10 @@ import {
   LayoutDashboard, 
   Users, 
   CreditCard, 
-  FileText, 
+  Settings, 
   LogOut, 
-  Shield 
+  Shield,
+  User
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -33,9 +34,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Visão Geral', path: '/admin' },
+    { icon: User, label: 'Perfil', path: '/admin/profile' },
+    { icon: CreditCard, label: 'Faturamento', path: '/admin/billing' },
     { icon: Users, label: 'Usuários', path: '/admin/users' },
-    { icon: CreditCard, label: 'Assinaturas', path: '/admin/subscriptions' },
-    { icon: FileText, label: 'Conteúdo', path: '/admin/content' },
+    { icon: Settings, label: 'Configurações', path: '/admin/settings' },
   ];
 
   return (

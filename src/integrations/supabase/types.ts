@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dr_ajuda_messages: {
         Row: {
           content: string
@@ -330,6 +384,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          amount_eur: number | null
           expires_at: string | null
           id: string
           product_id: string
@@ -339,6 +394,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          amount_eur?: number | null
           expires_at?: string | null
           id?: string
           product_id: string
@@ -348,6 +404,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          amount_eur?: number | null
           expires_at?: string | null
           id?: string
           product_id?: string
@@ -357,6 +414,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount_eur: number
+          created_at: string
+          id: string
+          payment_method: string | null
+          status: string
+          stripe_payment_id: string | null
+          subscription_id: string | null
+          transaction_date: string
+          user_id: string
+        }
+        Insert: {
+          amount_eur: number
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          subscription_id?: string | null
+          transaction_date?: string
+          user_id: string
+        }
+        Update: {
+          amount_eur?: number
+          created_at?: string
+          id?: string
+          payment_method?: string | null
+          status?: string
+          stripe_payment_id?: string | null
+          subscription_id?: string | null
+          transaction_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trials: {
         Row: {
@@ -405,7 +506,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_revenue_by_month: {
+        Row: {
+          month: string | null
+          total_revenue: number | null
+          transaction_count: number | null
+        }
+        Relationships: []
+      }
+      admin_user_overview: {
+        Row: {
+          id: string | null
+          name: string | null
+          plan: string | null
+          registration_date: string | null
+          status: string | null
+          subscription_expires: string | null
+          trial_ends: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
