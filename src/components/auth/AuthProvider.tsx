@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useTranslation } from 'react-i18next';
 
 interface AuthContextType {
   user: User | null;
@@ -28,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { i18n } = useTranslation();
 
   const checkAdminRole = async (userId: string) => {
     try {
@@ -66,16 +64,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         checkAdminRole(session.user.id);
         
-        // Load saved language preference
-        if (session.user.user_metadata?.language) {
-          await i18n.changeLanguage(session.user.user_metadata.language);
-          document.documentElement.lang = session.user.user_metadata.language;
-        } else {
-          const savedLanguage = localStorage.getItem('vida-leve-language');
-          if (savedLanguage) {
-            await i18n.changeLanguage(savedLanguage);
-            document.documentElement.lang = savedLanguage;
+        // Load saved language preference - with error handling
+        try {
+          // Dynamically import i18n to avoid circular dependency
+          const { default: i18n } = await import('@/i18n');
+          
+          if (session.user.user_metadata?.language) {
+            if (i18n && typeof i18n.changeLanguage === 'function') {
+              await i18n.changeLanguage(session.user.user_metadata.language);
+              document.documentElement.lang = session.user.user_metadata.language;
+            }
+          } else {
+            const savedLanguage = localStorage.getItem('vida-leve-language');
+            if (savedLanguage && i18n && typeof i18n.changeLanguage === 'function') {
+              await i18n.changeLanguage(savedLanguage);
+              document.documentElement.lang = savedLanguage;
+            }
           }
+        } catch (error) {
+          console.warn('Could not load language preference:', error);
         }
       }
       setLoading(false);

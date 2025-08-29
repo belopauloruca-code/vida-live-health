@@ -18,25 +18,35 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ variant = 'f
   ];
 
   const handleLanguageChange = async (languageCode: string) => {
-    // Change the language in i18next
-    await i18n.changeLanguage(languageCode);
-    
-    // Update document language attribute
-    document.documentElement.lang = languageCode;
-    
-    // Save to localStorage
-    localStorage.setItem('vida-leve-language', languageCode);
-    
-    // Save to user metadata in Supabase if authenticated
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.auth.updateUser({
-          data: { language: languageCode }
-        });
+      // Check if i18n is available and has changeLanguage method
+      if (!i18n || typeof i18n.changeLanguage !== 'function') {
+        console.error('i18n is not properly initialized');
+        return;
+      }
+
+      // Change the language in i18next
+      await i18n.changeLanguage(languageCode);
+      
+      // Update document language attribute
+      document.documentElement.lang = languageCode;
+      
+      // Save to localStorage
+      localStorage.setItem('vida-leve-language', languageCode);
+      
+      // Save to user metadata in Supabase if authenticated
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.auth.updateUser({
+            data: { language: languageCode }
+          });
+        }
+      } catch (error) {
+        console.log('Could not save language preference to user metadata:', error);
       }
     } catch (error) {
-      console.log('Could not save language preference to user metadata:', error);
+      console.error('Error changing language:', error);
     }
   };
 

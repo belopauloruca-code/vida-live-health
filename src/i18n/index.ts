@@ -26,6 +26,7 @@ i18n
     resources,
     fallbackLng: 'pt-BR',
     lng: 'pt-BR',
+    debug: false,
     
     detection: {
       order: ['localStorage', 'navigator'],
