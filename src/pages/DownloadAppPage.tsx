@@ -39,14 +39,17 @@ export const DownloadAppPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-6 space-y-3">
+              <div className="mb-6 space-y-4">
                 <InstallAppButton 
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6"
                   size="lg"
                 />
-                <div className="text-center">
+                <div className="text-center space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    👆 Clique no botão acima para instalação direta
+                    ⚡ Instalação direta - Funciona em Android e iOS
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Sem precisar da Google Play ou App Store
                   </p>
                 </div>
               </div>

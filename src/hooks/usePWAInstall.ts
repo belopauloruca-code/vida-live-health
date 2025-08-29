@@ -71,6 +71,16 @@ export const usePWAInstall = () => {
   }, []);
 
   const installPWA = useCallback(async () => {
+    // Handle iOS - show instructions since iOS doesn't support automatic installation
+    if (platform === 'ios') {
+      toast({
+        title: "Instalação iOS",
+        description: "Toque no botão de compartilhar e selecione 'Adicionar à Tela de Início'",
+        duration: 5000,
+      });
+      return false;
+    }
+
     // If in-app browser on Android, redirect to Chrome
     if (platform === 'android' && isInAppBrowser && !isInIframe) {
       toast({
