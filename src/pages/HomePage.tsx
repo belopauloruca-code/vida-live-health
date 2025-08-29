@@ -53,7 +53,8 @@ export const HomePage: React.FC = () => {
           <img 
             src={heroImage} 
             alt={t('home.title')}
-            className="w-full h-64 md:h-80 object-cover"
+            className="w-full h-56 sm:h-72 md:h-96 object-cover"
+            loading="lazy"
           />
         </div>
         

@@ -89,6 +89,7 @@ export type Database = {
           muscles: string | null
           title: string
           video_url: string | null
+          video_url_2: string | null
         }
         Insert: {
           category?: string | null
@@ -99,6 +100,7 @@ export type Database = {
           muscles?: string | null
           title: string
           video_url?: string | null
+          video_url_2?: string | null
         }
         Update: {
           category?: string | null
@@ -109,6 +111,7 @@ export type Database = {
           muscles?: string | null
           title?: string
           video_url?: string | null
+          video_url_2?: string | null
         }
         Relationships: []
       }

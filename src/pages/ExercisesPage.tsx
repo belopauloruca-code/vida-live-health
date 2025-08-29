@@ -24,6 +24,7 @@ interface Exercise {
   level: string;
   muscles: string;
   video_url?: string;
+  video_url_2?: string;
 }
 
 export const ExercisesPage: React.FC = () => {
@@ -35,6 +36,7 @@ export const ExercisesPage: React.FC = () => {
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [selectedVideoExercise, setSelectedVideoExercise] = useState<Exercise | null>(null);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(1);
   const [isGeneratingDemo, setIsGeneratingDemo] = useState(false);
   const [demoImages, setDemoImages] = useState<string[]>([]);
   const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
@@ -161,6 +163,7 @@ export const ExercisesPage: React.FC = () => {
 
   const openVideoDialog = (exercise: Exercise) => {
     setSelectedVideoExercise(exercise);
+    setSelectedVideoIndex(1);
     setDemoImages([]);
     setCurrentDemoIndex(0);
     setAiVideoScript(null);
@@ -400,96 +403,92 @@ export const ExercisesPage: React.FC = () => {
                 
                 <TabsContent value="video" className="space-y-4">
                   {(() => {
-                    const source = getEmbedSource(selectedVideoExercise.video_url || '');
+                    const hasMultipleVideos = selectedVideoExercise.video_url && selectedVideoExercise.video_url_2;
+                    const currentVideoUrl = selectedVideoIndex === 1 ? selectedVideoExercise.video_url : selectedVideoExercise.video_url_2;
+                    const source = getEmbedSource(currentVideoUrl || '');
                     
-                     // Special case for "Flexões + Prancha" with Google Drive video only
-                     if (selectedVideoExercise.title === 'Flexões + Prancha') {
-                       return (
-                         <div className="space-y-4">
-                           {selectedVideoExercise.video_url && (() => {
-                             const mainSource = getEmbedSource(selectedVideoExercise.video_url);
-                             if (mainSource.type === 'gdrive') {
-                               return (
-                                 <div className="space-y-4">
-                                   <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                     <iframe
-                                       src={mainSource.src}
-                                       className="w-full h-full"
-                                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                       referrerPolicy="strict-origin-when-cross-origin"
-                                       allowFullScreen
-                                     />
-                                   </div>
-                                   <Button
-                                     variant="outline"
-                                     onClick={() => window.open(mainSource.originalUrl, '_blank')}
-                                     className="w-full"
-                                   >
-                                     Abrir no Google Drive
-                                   </Button>
-                                 </div>
-                               );
-                             }
-                             return null;
-                           })()}
-                         </div>
-                       );
-                     }
-                    
-                    // Regular video handling
-                    if (source.type === 'file') {
-                      return (
-                        <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                          <video
-                            controls
-                            className="w-full h-full object-cover"
-                            poster="/api/placeholder/640/360"
-                            preload="metadata"
-                          >
-                            <source src={source.src} type="video/mp4" />
-                            Seu navegador não suporta vídeos.
-                          </video>
-                        </div>
-                      );
-                    } else if (source.type === 'youtube' || source.type === 'vimeo' || source.type === 'gdrive') {
-                      return (
-                        <div className="space-y-4">
-                          <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                            <iframe
-                              src={source.src}
-                              className="w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                              referrerPolicy="strict-origin-when-cross-origin"
-                              allowFullScreen
-                            />
-                          </div>
-                          <Button
-                            variant="outline"
-                            onClick={() => window.open(source.originalUrl, '_blank')}
-                            className="w-full"
-                          >
-                            Abrir no {source.type === 'youtube' ? 'YouTube' : source.type === 'vimeo' ? 'Vimeo' : 'Google Drive'}
-                          </Button>
-                        </div>
-                      );
-                    } else {
-                      return (
-                        <div className="space-y-4">
-                          <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                            <p className="text-gray-500">Este vídeo bloqueia incorporação</p>
-                          </div>
-                          {selectedVideoExercise.video_url && (
+                    return (
+                      <div className="space-y-4">
+                        {/* Video selector for exercises with multiple videos */}
+                        {hasMultipleVideos && (
+                          <div className="flex justify-center space-x-2 border-b pb-4">
                             <Button
-                              variant="outline"
-                              onClick={() => window.open(selectedVideoExercise.video_url, '_blank')}
-                              className="w-full"
+                              variant={selectedVideoIndex === 1 ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setSelectedVideoIndex(1)}
                             >
-                              Abrir no YouTube
+                              Vídeo 1
                             </Button>
-                          )}
-                        </div>
-                      );
-                    }
+                            <Button
+                              variant={selectedVideoIndex === 2 ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setSelectedVideoIndex(2)}
+                            >
+                              Vídeo 2
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {/* Video player */}
+                        {currentVideoUrl ? (() => {
+                          if (source.type === 'file') {
+                            return (
+                              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                <video
+                                  controls
+                                  className="w-full h-full object-cover"
+                                  poster="/api/placeholder/640/360"
+                                  preload="metadata"
+                                >
+                                  <source src={source.src} type="video/mp4" />
+                                  Seu navegador não suporta vídeos.
+                                </video>
+                              </div>
+                            );
+                          } else if (source.type === 'youtube' || source.type === 'vimeo' || source.type === 'gdrive') {
+                            return (
+                              <div className="space-y-4">
+                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                  <iframe
+                                    src={source.src}
+                                    className="w-full h-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerPolicy="strict-origin-when-cross-origin"
+                                    allowFullScreen
+                                  />
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => window.open(source.originalUrl, '_blank')}
+                                  className="w-full"
+                                >
+                                  Abrir no {source.type === 'youtube' ? 'YouTube' : source.type === 'vimeo' ? 'Vimeo' : 'Google Drive'}
+                                </Button>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="space-y-4">
+                                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                                  <p className="text-gray-500">Este vídeo bloqueia incorporação</p>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => window.open(currentVideoUrl, '_blank')}
+                                  className="w-full"
+                                >
+                                  Abrir Vídeo
+                                </Button>
+                              </div>
+                            );
+                          }
+                        })() : (
+                          <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                            <p className="text-gray-500">Nenhum vídeo disponível</p>
+                          </div>
+                        )}
+                      </div>
+                    );
                   })()}
                 </TabsContent>
                 

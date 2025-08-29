@@ -202,15 +202,15 @@ export const DashboardPage: React.FC = () => {
     <div className="min-h-screen bg-background pb-safe-bottom-nav">
       {/* Hero Cover Section */}
       <div 
-        className="relative h-48 bg-cover bg-center bg-no-repeat"
+        className="relative h-40 sm:h-48 md:h-56 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${dashboardHeroBg})`
         }}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center px-4">
           <div className="text-center text-white">
-            <h1 className="text-3xl font-bold mb-2">{t('dashboard.banner.title')}</h1>
-            <p className="text-lg opacity-90">{t('dashboard.banner.subtitle')}</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{t('dashboard.banner.title')}</h1>
+            <p className="text-base sm:text-lg opacity-90">{t('dashboard.banner.subtitle')}</p>
             <Button 
               className="mt-4 bg-white text-green-600 hover:bg-gray-100" 
               onClick={() => navigate('/subscription')}
@@ -405,14 +405,14 @@ export const DashboardPage: React.FC = () => {
               }}
               onClick={() => navigate('/subscription')}
             >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex items-center gap-3 text-white">
-                  <Star className="h-5 w-5" />
-                  <span className="font-medium">Desbloquear Planos Premium</span>
+              <div className="absolute inset-0 flex items-center justify-center px-4">
+                <div className="flex items-center gap-2 sm:gap-3 text-white">
+                  <Star className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="font-medium text-sm sm:text-base">Desbloquear Planos Premium</span>
                   <Button 
                     size="sm" 
                     variant="secondary"
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 text-xs sm:text-sm"
                   >
                     Assinar
                   </Button>
