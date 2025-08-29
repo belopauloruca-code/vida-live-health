@@ -1,118 +1,199 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { MessageCircle, Send, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { getReply } from '@/data/drAjudaResponses';
+import { useToast } from '@/hooks/use-toast';
+
+interface Message {
+  id: string;
+  content: string;
+  isBot: boolean;
+  timestamp: Date;
+}
 
 export const AIAssistantPage: React.FC = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Olá! Eu sou o Dr. de Ajuda, seu assistente pessoal para uma vida mais saudável. Como posso te ajudar hoje?",
-      isBot: true,
-      timestamp: new Date(),
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   const quickSuggestions = [
-    "Como bater minha meta de água?",
-    "Sugestões de lanches até 200 kcal",
-    "Treino rápido de 10 min",
-    "Como calcular meu IMC ideal?",
-    "Receitas ricas em proteína",
-    "Exercícios para iniciantes"
+    "Como perder peso de forma saudável?",
+    "O que posso comer à noite?",
+    "Quantas vezes por semana devo treinar?",
+    "Como manter a motivação no emagrecimento?",
+    "Como posso aumentar meu consumo de água?",
+    "Quais são os melhores lanches saudáveis?"
   ];
+
+  // Load chat history on component mount
+  useEffect(() => {
+    loadChatHistory();
+  }, [user]);
+
+  const loadChatHistory = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('dr_ajuda_messages')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (error) {
+        console.error('Error loading chat history:', error);
+        return;
+      }
+
+      const historyMessages: Message[] = data.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        isBot: msg.role === 'assistant',
+        timestamp: new Date(msg.created_at)
+      }));
+
+      // Add welcome message if no history
+      if (historyMessages.length === 0) {
+        const welcomeMessage: Message = {
+          id: 'welcome',
+          content: "Olá! Eu sou o Dr. Ajuda, seu assistente carinhoso para uma vida mais saudável. Como posso te ajudar hoje? 💚",
+          isBot: true,
+          timestamp: new Date()
+        };
+        setMessages([welcomeMessage]);
+      } else {
+        setMessages(historyMessages);
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+      // Show welcome message on error
+      const welcomeMessage: Message = {
+        id: 'welcome',
+        content: "Olá! Eu sou o Dr. Ajuda, seu assistente carinhoso para uma vida mais saudável. Como posso te ajudar hoje? 💚",
+        isBot: true,
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
+    }
+  };
+
+  const saveMessage = async (content: string, role: 'user' | 'assistant') => {
+    if (!user) return;
+
+    try {
+      await supabase.from('dr_ajuda_messages').insert({
+        user_id: user.id,
+        role,
+        content
+      });
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    const userMessage = {
-      id: Date.now(),
-      text: inputMessage,
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: inputMessage.trim(),
       isBot: false,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
 
     setMessages(prev => [...prev, userMessage]);
+    
+    // Save user message
+    await saveMessage(userMessage.content, 'user');
+    
+    const currentInput = inputMessage;
     setInputMessage('');
     setLoading(true);
 
-    // Simulate AI response (in production, this would call a real AI API)
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        text: generateResponse(inputMessage),
+    // Generate Dr. Ajuda response with delay for natural feeling
+    setTimeout(async () => {
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: getReply(currentInput),
         isBot: true,
-        timestamp: new Date(),
+        timestamp: new Date()
       };
+
       setMessages(prev => [...prev, botResponse]);
+      
+      // Save bot message
+      await saveMessage(botResponse.content, 'assistant');
+      
       setLoading(false);
-    }, 1500);
+    }, 1200);
   };
 
-  const generateResponse = (message: string) => {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('água') || lowerMessage.includes('hidrat')) {
-      return "💧 Ótima pergunta! Para bater sua meta de água: \n\n• Tenha sempre uma garrafa por perto\n• Configure lembretes no app\n• Beba um copo ao acordar\n• Adicione limão ou hortelã para variar\n• Monitore sua urina - ela deve estar clara\n\nLembre-se: sua meta atual é baseada no seu peso. Mantenha-se hidratado! 🌟";
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
-    
-    if (lowerMessage.includes('lanche') || lowerMessage.includes('200') || lowerMessage.includes('kcal')) {
-      return "🍎 Aqui estão ótimas opções de lanches até 200 kcal:\n\n• 1 maçã + 10g de amendoim (180 kcal)\n• 1 iogurte grego + 1 colher de granola (150 kcal)\n• 2 fatias de queijo branco + tomate (120 kcal)\n• 1 banana + 1 colher de pasta de amendoim (190 kcal)\n• Mix de castanhas (30g = 180 kcal)\n\nDica: combine sempre proteína com carboidrato para maior saciedade! 😋";
-    }
-    
-    if (lowerMessage.includes('treino') || lowerMessage.includes('exerc') || lowerMessage.includes('10')) {
-      return "💪 Treino rápido de 10 minutos para queimar calorias:\n\n1. Polichinelos - 1 min\n2. Agachamentos - 1 min\n3. Flexões (ou no joelho) - 1 min\n4. Prancha - 30s\n5. Mountain climbers - 1 min\n6. Burpees - 1 min\n7. Descanso - 30s\n8. Repetir sequência\n\nEsse treino queima ~80-100 kcal! Use o timer do app para acompanhar. 🔥";
-    }
-    
-    if (lowerMessage.includes('imc') || lowerMessage.includes('peso')) {
-      return "📊 O IMC (Índice de Massa Corporal) é calculado dividindo seu peso (kg) pela altura (m) ao quadrado.\n\nClassificação:\n• Abaixo de 18,5: Abaixo do peso\n• 18,5-24,9: Peso normal\n• 25-29,9: Sobrepeso\n• 30+: Obesidade\n\nSeu IMC atual está no seu perfil! Lembre-se: o IMC é apenas uma referência. Consulte sempre um profissional de saúde. 👩‍⚕️";
-    }
-    
-    return "Entendo sua pergunta! Como assistente focado em emagrecimento saudável, posso te ajudar com:\n\n• Dicas de hidratação e alimentação\n• Sugestões de exercícios seguros\n• Orientações sobre metas calóricas\n• Motivação para manter a rotina\n\n⚠️ Importante: Para questões médicas específicas, sempre consulte um profissional de saúde qualificado.\n\nQue tal experimentar uma das sugestões rápidas abaixo? 😊";
   };
 
   const handleSuggestionClick = (suggestion: string) => {
     setInputMessage(suggestion);
+    setTimeout(() => sendMessage(), 100);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container mx-auto p-4 max-w-4xl">
         {/* Header */}
-        <div className="mb-6 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <MessageCircle className="h-8 w-8 text-green-500" />
+        <Card className="mb-6">
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src="" alt="Dr. Ajuda" />
+                <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                  DA
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Dr. Ajuda
+                </CardTitle>
+              </div>
             </div>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Dr. de Ajuda</h1>
-          <p className="text-gray-600">Seu assistente de saúde e bem-estar</p>
-        </div>
+            <p className="text-muted-foreground">
+              Seu assistente carinhoso de saúde e bem-estar
+            </p>
+          </CardHeader>
+        </Card>
 
         {/* Quick Suggestions */}
-        {messages.length === 1 && (
-          <Card className="mb-6 border-green-100 bg-green-50">
+        {messages.length <= 1 && (
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="flex items-center text-green-600 text-lg">
-                <Sparkles className="h-5 w-5 mr-2" />
-                Sugestões Rápidas
+              <CardTitle className="flex items-center text-lg">
+                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+                💬 Como posso te ajudar hoje?
               </CardTitle>
               <CardDescription>
                 Clique em uma das sugestões abaixo ou digite sua própria pergunta
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {quickSuggestions.map((suggestion, index) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="justify-start h-auto p-3 text-left border-green-200 hover:bg-green-50"
+                    className="text-left h-auto p-3 justify-start hover:scale-105 transition-transform"
                     onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
@@ -124,69 +205,85 @@ export const AIAssistantPage: React.FC = () => {
         )}
 
         {/* Messages */}
-        <div className="space-y-4 mb-6">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-            >
-              <div
-                className={`max-w-[80%] p-4 rounded-lg ${
-                  message.isBot
-                    ? 'bg-white border border-gray-200'
-                    : 'bg-green-500 text-white'
-                }`}
-              >
-                {message.isBot && (
-                  <div className="flex items-center mb-2">
-                    <MessageCircle className="h-4 w-4 mr-2 text-green-500" />
-                    <span className="text-sm font-medium text-green-600">Dr. de Ajuda</span>
+        <Card className="mb-6">
+          <CardContent className="p-0">
+            <div className="h-96 overflow-y-auto p-4 space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.isBot ? 'justify-start' : 'justify-end'} animate-in fade-in-50 slide-in-from-bottom-2 duration-300`}
+                >
+                  <div className={`flex items-start gap-2 max-w-xs lg:max-w-md ${message.isBot ? '' : 'flex-row-reverse'}`}>
+                    {message.isBot && (
+                      <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                        <AvatarImage src="" alt="Dr. Ajuda" />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                          DA
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={`px-4 py-3 rounded-2xl ${
+                        message.isBot
+                          ? 'bg-white border border-border text-foreground rounded-bl-sm'
+                          : 'bg-primary text-primary-foreground rounded-br-sm'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <span className="text-xs opacity-70 mt-1 block">
+                        {message.timestamp.toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
                   </div>
-                )}
-                <p className="whitespace-pre-line text-sm">{message.text}</p>
-                <p className="text-xs opacity-70 mt-2">
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {loading && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-gray-200 p-4 rounded-lg">
-                <div className="flex items-center space-x-2">
-                  <MessageCircle className="h-4 w-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-600">Dr. de Ajuda está digitando...</span>
                 </div>
-                <div className="flex space-x-1 mt-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              ))}
+              
+              {loading && (
+                <div className="flex justify-start animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+                  <div className="flex items-start gap-2">
+                    <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                      <AvatarImage src="" alt="Dr. Ajuda" />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        DA
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-white border border-border text-foreground">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm">Dr. Ajuda está digitando...</span>
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Input */}
-        <Card className="sticky bottom-24 bg-white shadow-lg">
-          <CardContent className="pt-4">
+        <Card>
+          <CardContent className="p-4">
             <div className="flex space-x-2">
-              <Input
+              <Textarea
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Digite sua pergunta sobre saúde e bem-estar..."
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                onKeyPress={handleKeyPress}
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 min-h-[44px] max-h-32 resize-none"
+                rows={1}
               />
-              <Button
-                onClick={sendMessage}
+              <Button 
+                onClick={sendMessage} 
                 disabled={loading || !inputMessage.trim()}
-                className="bg-green-500 hover:bg-green-600"
+                className="px-6"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -195,14 +292,14 @@ export const AIAssistantPage: React.FC = () => {
         </Card>
 
         {/* Disclaimer */}
-        <div className="mt-6 text-center text-xs text-gray-500">
-          <p>
-            ⚠️ Este assistente fornece informações gerais sobre saúde e bem-estar.
-            Para questões médicas específicas, consulte sempre um profissional qualificado.
+        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+          <p className="text-sm text-muted-foreground text-center">
+            <strong>💡 Aviso:</strong> Dr. Ajuda oferece dicas gerais de saúde e bem-estar. 
+            Para orientações médicas específicas, sempre consulte um profissional de saúde.
           </p>
         </div>
       </div>
-      
+
       <BottomNavigation />
     </div>
   );

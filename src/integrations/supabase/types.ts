@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      dr_ajuda_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercise_sessions: {
         Row: {
           ended_at: string | null
