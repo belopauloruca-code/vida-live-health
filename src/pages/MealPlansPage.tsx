@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Clock, Zap, Crown } from 'lucide-react';
+import { Clock, Zap, Crown, Coffee, UtensilsCrossed, Cookie, Utensils } from 'lucide-react';
 import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +33,21 @@ export const MealPlansPage: React.FC = () => {
 
   const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
   const mealTypes = ['Café', 'Almoço', 'Lanche', 'Jantar'];
+  
+  const getMealIcon = (mealType: string) => {
+    switch (mealType) {
+      case 'Café':
+        return <Coffee className="h-5 w-5 text-amber-600" />;
+      case 'Almoço':
+        return <UtensilsCrossed className="h-5 w-5 text-green-600" />;
+      case 'Lanche':
+        return <Cookie className="h-5 w-5 text-orange-600" />;
+      case 'Jantar':
+        return <Utensils className="h-5 w-5 text-blue-600" />;
+      default:
+        return <Utensils className="h-5 w-5 text-gray-600" />;
+    }
+  };
 
   useEffect(() => {
     loadCurrentPlan();
@@ -153,10 +168,15 @@ export const MealPlansPage: React.FC = () => {
                         <CardHeader className="pb-3">
                           <div className="flex justify-between items-start">
                             <div>
+                            <div className="flex items-center gap-2">
                               <CardTitle className="text-lg">{mealItem.recipe?.title || 'Receita não encontrada'}</CardTitle>
-                              <CardDescription className="text-sm font-medium text-green-600">
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              {getMealIcon(mealItem.meal_type)}
+                              <CardDescription className="text-sm font-medium">
                                 {mealItem.meal_type}
                               </CardDescription>
+                            </div>
                             </div>
                             {mealItem.recipe && (
                               <div className="text-right">

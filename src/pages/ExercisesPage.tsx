@@ -38,6 +38,8 @@ export const ExercisesPage: React.FC = () => {
   const [isGeneratingDemo, setIsGeneratingDemo] = useState(false);
   const [demoImages, setDemoImages] = useState<string[]>([]);
   const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
+  const [aiVideoScript, setAiVideoScript] = useState<any>(null);
+  const [isGeneratingVideo, setIsGeneratingVideo] = useState(false);
 
   useEffect(() => {
     loadExercises();
@@ -161,6 +163,7 @@ export const ExercisesPage: React.FC = () => {
     setSelectedVideoExercise(exercise);
     setDemoImages([]);
     setCurrentDemoIndex(0);
+    setAiVideoScript(null);
   };
 
   const generateAIDemo = async () => {
@@ -196,6 +199,34 @@ export const ExercisesPage: React.FC = () => {
       });
     } finally {
       setIsGeneratingDemo(false);
+    }
+  };
+
+  const generateAIVideo = async () => {
+    if (!selectedVideoExercise) return;
+    
+    setIsGeneratingVideo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-exercise-video', {
+        body: { exerciseName: selectedVideoExercise.title }
+      });
+
+      if (error) throw error;
+      
+      setAiVideoScript(data.script);
+      
+      toast({
+        title: "Vídeo IA gerado!",
+        description: "Roteiro de demonstração criado com sucesso"
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Falha ao gerar vídeo IA"
+      });
+    } finally {
+      setIsGeneratingVideo(false);
     }
   };
 
@@ -361,9 +392,10 @@ export const ExercisesPage: React.FC = () => {
             </DialogHeader>
             {selectedVideoExercise && (
               <Tabs defaultValue="video" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="video">Vídeo</TabsTrigger>
                   <TabsTrigger value="ai-demo">Demo IA</TabsTrigger>
+                  <TabsTrigger value="ai-video">Vídeo IA</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="video" className="space-y-4">
@@ -544,6 +576,104 @@ export const ExercisesPage: React.FC = () => {
                           className="w-full"
                         >
                           {isGeneratingDemo ? "Gerando Nova Demo..." : "Gerar Nova Demo"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="ai-video" className="space-y-4">
+                  <div className="text-center space-y-4">
+                    {!aiVideoScript ? (
+                      <div className="space-y-4">
+                        <div className="aspect-video bg-gradient-to-br from-green-100 to-blue-100 rounded-lg flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">🎥</div>
+                            <h3 className="font-semibold text-gray-800">Vídeo Gerado por IA</h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Crie um roteiro detalhado do exercício usando inteligência artificial
+                            </p>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={generateAIVideo}
+                          disabled={isGeneratingVideo}
+                          className="w-full"
+                        >
+                          {isGeneratingVideo ? "Gerando Vídeo IA..." : "Gerar Vídeo IA"}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="bg-white border rounded-lg p-6 text-left space-y-4">
+                          <div className="border-b pb-4">
+                            <h3 className="text-xl font-bold text-gray-800">{aiVideoScript.title}</h3>
+                            <p className="text-sm text-gray-600 mt-2">{aiVideoScript.overview}</p>
+                            <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {Math.floor(aiVideoScript.total_duration / 60)}:{(aiVideoScript.total_duration % 60).toString().padStart(2, '0')}
+                              </span>
+                              <span>{aiVideoScript.steps?.length || 0} passos</span>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <h4 className="font-semibold text-gray-800">Sequência do Exercício:</h4>
+                            {aiVideoScript.steps?.map((step: any, index: number) => (
+                              <div key={index} className="border-l-4 border-primary pl-4 py-2">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <h5 className="font-medium text-gray-800">
+                                      Passo {step.step}: {step.description}
+                                    </h5>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        {step.duration_seconds}s
+                                      </span>
+                                    </div>
+                                    {step.focus_points && step.focus_points.length > 0 && (
+                                      <div className="mt-2">
+                                        <p className="text-xs font-medium text-gray-700 mb-1">Pontos de foco:</p>
+                                        <ul className="text-xs text-gray-600 space-y-1">
+                                          {step.focus_points.map((point: string, i: number) => (
+                                            <li key={i} className="flex items-start gap-2">
+                                              <span className="text-primary">•</span>
+                                              {point}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {aiVideoScript.safety_tips && aiVideoScript.safety_tips.length > 0 && (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                              <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Dicas de Segurança:</h4>
+                              <ul className="text-sm text-yellow-700 space-y-1">
+                                {aiVideoScript.safety_tips.map((tip: string, index: number) => (
+                                  <li key={index} className="flex items-start gap-2">
+                                    <span>•</span>
+                                    {tip}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <Button 
+                          variant="secondary"
+                          onClick={generateAIVideo}
+                          disabled={isGeneratingVideo}
+                          className="w-full"
+                        >
+                          {isGeneratingVideo ? "Gerando Novo Vídeo..." : "Gerar Novo Roteiro"}
                         </Button>
                       </div>
                     )}
