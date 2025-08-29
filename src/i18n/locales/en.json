@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "language": "Language"
+  },
+  "navigation": {
+    "dashboard": "Home",
+    "exercises": "Exercises",
+    "meals": "Meals",
+    "assistant": "Assistant",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "home": {
+    "title": "Vida Leve",
+    "subtitle": "Your digital companion for a healthier life. Achieve your weight loss goals with personalized plans, guided exercises and intelligent tracking.",
+    "subscribe": "Subscribe Premium",
+    "login": "Login / Create account",
+    "downloadApp": "📱 Download Mobile App",
+    "benefits": {
+      "personalizedGoals": {
+        "title": "Personalized Goals",
+        "description": "Set your personalized weight, calorie and hydration goals"
+      },
+      "mealPlans": {
+        "title": "Meal Plans",
+        "description": "Receive weekly plans with balanced and tasty recipes"
+      },
+      "guidedExercises": {
+        "title": "Guided Exercises",
+        "description": "Complete library of exercises for all levels"
+      },
+      "hydrationControl": {
+        "title": "Hydration Control",
+        "description": "Monitor your daily water intake with smart reminders"
+      },
+      "aiAssistant": {
+        "title": "AI Assistant",
+        "description": "Dr. Help always available for your health questions"
+      },
+      "quickResults": {
+        "title": "Quick Results",
+        "description": "See results in just weeks with our proven method"
+      }
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "logout": "Logout",
+    "stats": {
+      "caloricGoal": "Caloric Goal",
+      "meals": "Meals",
+      "duration": "Duration",
+      "recipes": "Recipes"
+    },
+    "hydration": {
+      "title": "Hydration",
+      "description": "Track your daily water intake",
+      "progress": "{{current}}ml of {{goal}}ml",
+      "cupsRemaining": "{{cups}} cups remaining",
+      "cupsDrunk": "{{cups}} cups drunk",
+      "addWater": "+{{amount}}ml",
+      "goalReached": "Hydration goal reached! 🎉"
+    },
+    "exercise": {
+      "title": "Exercise of the Day",
+      "suggestion": "How about a 30-minute walk today?"
+    },
+    "quickActions": {
+      "viewMealPlans": "View Meal Plans",
+      "browseExercises": "Browse Exercises"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "language": "Language",
+    "subscription": "Subscription",
+    "dataExport": "Export Data",
+    "privacy": "Privacy & Terms",
+    "logout": "Logout"
+  },
+  "languages": {
+    "pt": "Português (PT)",
+    "pt-BR": "Português (BR)",
+    "en": "English"
+  }
+}

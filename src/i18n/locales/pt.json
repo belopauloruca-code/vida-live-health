@@ -1,0 +1,97 @@
+{
+  "common": {
+    "loading": "A carregar...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "close": "Fechar",
+    "next": "Seguinte",
+    "previous": "Anterior",
+    "search": "Pesquisar",
+    "language": "Idioma"
+  },
+  "navigation": {
+    "dashboard": "Início",
+    "exercises": "Exercícios",
+    "meals": "Refeições",
+    "assistant": "Assistente",
+    "profile": "Perfil",
+    "settings": "Definições"
+  },
+  "home": {
+    "title": "Vida Leve",
+    "subtitle": "O seu companheiro digital para uma vida mais saudável. Alcance os seus objectivos de emagrecimento com planos personalizados, exercícios guiados e acompanhamento inteligente.",
+    "subscribe": "Subscrever Premium",
+    "login": "Entrar / Criar conta",
+    "downloadApp": "📱 Descarregar App Mobile",
+    "benefits": {
+      "personalizedGoals": {
+        "title": "Metas Personalizadas",
+        "description": "Defina as suas metas de peso, calorias e hidratação personalizadas"
+      },
+      "mealPlans": {
+        "title": "Planos de Refeições",
+        "description": "Receba planos semanais com receitas equilibradas e saborosas"
+      },
+      "guidedExercises": {
+        "title": "Exercícios Guiados",
+        "description": "Biblioteca completa de exercícios para todos os níveis"
+      },
+      "hydrationControl": {
+        "title": "Controlo de Hidratação",
+        "description": "Monitorize a sua ingestão diária de água com lembretes inteligentes"
+      },
+      "aiAssistant": {
+        "title": "Assistente IA",
+        "description": "Dr. de Ajuda sempre disponível para as suas dúvidas sobre saúde"
+      },
+      "quickResults": {
+        "title": "Resultados Rápidos",
+        "description": "Veja resultados em poucas semanas com o nosso método comprovado"
+      }
+    }
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo",
+    "logout": "Sair",
+    "stats": {
+      "caloricGoal": "Meta Calórica",
+      "meals": "Refeições",
+      "duration": "Duração",
+      "recipes": "Receitas"
+    },
+    "hydration": {
+      "title": "Hidratação",
+      "description": "Acompanhe a sua ingestão de água diária",
+      "progress": "{{current}}ml de {{goal}}ml",
+      "cupsRemaining": "{{cups}} copos restantes",
+      "cupsDrunk": "{{cups}} copos bebidos",
+      "addWater": "+{{amount}}ml",
+      "goalReached": "Meta de hidratação atingida! 🎉"
+    },
+    "exercise": {
+      "title": "Exercício do Dia",
+      "suggestion": "Que tal uma caminhada de 30 minutos hoje?"
+    },
+    "quickActions": {
+      "viewMealPlans": "Ver Planos de Refeição",
+      "browseExercises": "Explorar Exercícios"
+    }
+  },
+  "settings": {
+    "title": "Definições",
+    "profile": "Perfil",
+    "notifications": "Notificações",
+    "language": "Idioma",
+    "subscription": "Subscrição",
+    "dataExport": "Exportar Dados",
+    "privacy": "Privacidade e Termos",
+    "logout": "Sair da Conta"
+  },
+  "languages": {
+    "pt": "Português (PT)",
+    "pt-BR": "Português (BR)",
+    "en": "English"
+  }
+}

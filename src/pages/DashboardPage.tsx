@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +20,7 @@ export const DashboardPage: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { hasActiveSubscription } = usePremiumAccess();
+  const { t } = useTranslation();
   const [profile, setProfile] = useState<any>(null);
   const [hydrationToday, setHydrationToday] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3850);
@@ -117,20 +120,23 @@ export const DashboardPage: React.FC = () => {
         {/* Header */}
         <div className="mb-6 flex justify-between items-start">
           <BrandHeader 
-            title={`Olá, ${profile?.name || 'Usuário'}!`}
+            title={`${t('dashboard.welcome')}, ${profile?.name || 'Usuário'}!`}
             subtitle="Como está sua jornada hoje?"
             showLogo={false}
           />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="flex items-center gap-2 disabled:opacity-50"
-          >
-            <LogOut className="h-4 w-4" />
-            {isLoggingOut ? 'Saindo...' : 'Sair'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher variant="compact" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="flex items-center gap-2 disabled:opacity-50"
+            >
+              <LogOut className="h-4 w-4" />
+              {isLoggingOut ? 'Saindo...' : t('dashboard.logout')}
+            </Button>
+          </div>
         </div>
         
         <TrialBanner />
@@ -141,7 +147,7 @@ export const DashboardPage: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
                 <Target className="h-4 w-4 mr-2 text-green-500" />
-                Meta Calórica
+                {t('dashboard.stats.caloricGoal')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -154,7 +160,7 @@ export const DashboardPage: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
                 <Calendar className="h-4 w-4 mr-2 text-green-500" />
-                Refeições
+                {t('dashboard.stats.meals')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -167,7 +173,7 @@ export const DashboardPage: React.FC = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
                 <Calendar className="h-4 w-4 mr-2 text-green-500" />
-                Duração
+                {t('dashboard.stats.duration')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -179,7 +185,7 @@ export const DashboardPage: React.FC = () => {
           <Card className="border-green-100">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Receitas
+                {t('dashboard.stats.recipes')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -194,7 +200,7 @@ export const DashboardPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-blue-600">
               <Droplets className="h-5 w-5 mr-2" />
-              Hidratação
+              {t('dashboard.hydration.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -244,8 +250,8 @@ export const DashboardPage: React.FC = () => {
             </div>
             
             <div className="flex justify-between text-sm text-gray-600">
-              <span>{cupsRemaining} copos restantes</span>
-              <span>{cupsDrunk} copos bebidos</span>
+              <span>{t('dashboard.hydration.cupsRemaining', { cups: cupsRemaining })}</span>
+              <span>{t('dashboard.hydration.cupsDrunk', { cups: cupsDrunk })}</span>
             </div>
           </CardContent>
         </Card>
@@ -255,7 +261,7 @@ export const DashboardPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-orange-600">
               <Activity className="h-5 w-5 mr-2" />
-              Exercício do Dia
+              {t('dashboard.exercise.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -284,7 +290,7 @@ export const DashboardPage: React.FC = () => {
               className="h-16 border-green-200 hover:bg-green-50"
               onClick={() => window.location.href = '/meal-plans'}
             >
-              Ver Planos
+              {t('dashboard.quickActions.viewMealPlans')}
             </Button>
           ) : (
             <Card className="h-16 flex items-center justify-center border-gray-200 bg-gray-50">
@@ -306,7 +312,7 @@ export const DashboardPage: React.FC = () => {
             className="h-16 border-green-200 hover:bg-green-50"
             onClick={() => window.location.href = '/exercises'}
           >
-            Exercícios
+            {t('dashboard.quickActions.browseExercises')}
           </Button>
         </div>
       </div>

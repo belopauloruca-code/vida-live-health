@@ -1,43 +1,46 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Droplets, Utensils, Target, Heart, Timer, ExternalLink } from 'lucide-react';
+import heroImage from '/images/hero-vida-leve.jpg';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const benefits = [
     {
       icon: <Target className="h-8 w-8 text-green-500" />,
-      title: "Metas Personalizadas",
-      description: "Defina suas metas de peso, calorias e hidratação personalizadas"
+      title: t('home.benefits.personalizedGoals.title'),
+      description: t('home.benefits.personalizedGoals.description')
     },
     {
       icon: <Utensils className="h-8 w-8 text-green-500" />,
-      title: "Planos de Refeições",
-      description: "Receba planos semanais com receitas balanceadas e saborosas"
+      title: t('home.benefits.mealPlans.title'),
+      description: t('home.benefits.mealPlans.description')
     },
     {
       icon: <Activity className="h-8 w-8 text-green-500" />,
-      title: "Exercícios Guiados",
-      description: "Biblioteca completa de exercícios para todos os níveis"
+      title: t('home.benefits.guidedExercises.title'),
+      description: t('home.benefits.guidedExercises.description')
     },
     {
       icon: <Droplets className="h-8 w-8 text-green-500" />,
-      title: "Controle de Hidratação",
-      description: "Monitore sua ingestão diária de água com lembretes inteligentes"
+      title: t('home.benefits.hydrationControl.title'),
+      description: t('home.benefits.hydrationControl.description')
     },
     {
       icon: <Heart className="h-8 w-8 text-green-500" />,
-      title: "Assistente IA",
-      description: "Dr. de Ajuda sempre disponível para suas dúvidas sobre saúde"
+      title: t('home.benefits.aiAssistant.title'),
+      description: t('home.benefits.aiAssistant.description')
     },
     {
       icon: <Timer className="h-8 w-8 text-green-500" />,
-      title: "Resultados Rápidos",
-      description: "Veja resultados em poucas semanas com nosso método comprovado"
+      title: t('home.benefits.quickResults.title'),
+      description: t('home.benefits.quickResults.description')
     }
   ];
 
@@ -45,13 +48,21 @@ export const HomePage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16">
+        {/* Hero Banner */}
+        <div className="mb-16 rounded-2xl overflow-hidden shadow-xl">
+          <img 
+            src={heroImage} 
+            alt={t('home.title')}
+            className="w-full h-64 md:h-80 object-cover"
+          />
+        </div>
+        
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            <span className="text-green-500">Vida</span> Live
+            <span className="text-green-500">{t('home.title')}</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Seu companheiro digital para uma vida mais saudável. Alcance seus objetivos de emagrecimento 
-            com planos personalizados, exercícios guiados e acompanhamento inteligente.
+            {t('home.subtitle')}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -61,7 +72,7 @@ export const HomePage: React.FC = () => {
               onClick={() => navigate('/subscription')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Assinar Premium
+              {t('home.subscribe')}
             </Button>
             <Button 
               variant="outline" 
@@ -69,7 +80,7 @@ export const HomePage: React.FC = () => {
               className="border-green-500 text-green-500 hover:bg-green-50 px-8 py-3 text-lg"
               onClick={() => navigate('/login')}
             >
-              Entrar / Criar conta
+              {t('home.login')}
             </Button>
           </div>
 
@@ -81,7 +92,7 @@ export const HomePage: React.FC = () => {
               className="border-primary text-primary hover:bg-primary/10"
               onClick={() => navigate('/download-app')}
             >
-              📱 Baixar App Mobile
+              {t('home.downloadApp')}
             </Button>
           </div>
         </div>

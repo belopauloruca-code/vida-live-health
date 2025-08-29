@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +17,7 @@ export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notifications, setNotifications] = useState({
     water: true,
@@ -44,7 +47,7 @@ export const SettingsPage: React.FC = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 flex items-center">
             <Settings className="h-6 w-6 mr-2 text-green-500" />
-            Configurações
+            {t('settings.title')}
           </h1>
           <p className="text-gray-600">Personalize sua experiência</p>
         </div>
@@ -54,7 +57,7 @@ export const SettingsPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Bell className="h-5 w-5 mr-2 text-green-500" />
-              Notificações
+              {t('settings.notifications')}
             </CardTitle>
             <CardDescription>
               Configure quando você quer receber lembretes
@@ -122,16 +125,11 @@ export const SettingsPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Globe className="h-5 w-5 mr-2 text-green-500" />
-              Idioma
+              {t('settings.language')}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <span>Português (Brasil)</span>
-              <Button variant="outline" size="sm">
-                Alterar
-              </Button>
-            </div>
+            <LanguageSwitcher />
           </CardContent>
         </Card>
 
@@ -140,7 +138,7 @@ export const SettingsPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-yellow-700">
               <CreditCard className="h-5 w-5 mr-2" />
-              Assinatura Premium
+              {t('settings.subscription')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -165,7 +163,7 @@ export const SettingsPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Download className="h-5 w-5 mr-2 text-green-500" />
-              Exportar Dados
+              {t('settings.dataExport')}
             </CardTitle>
             <CardDescription>
               Baixe todos os seus dados em formato CSV
@@ -183,7 +181,7 @@ export const SettingsPage: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Shield className="h-5 w-5 mr-2 text-green-500" />
-              Privacidade e Termos
+              {t('settings.privacy')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -209,7 +207,7 @@ export const SettingsPage: React.FC = () => {
               className="w-full border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              {isLoggingOut ? 'Saindo da conta...' : 'Sair da Conta'}
+              {isLoggingOut ? 'Saindo da conta...' : t('settings.logout')}
             </Button>
           </CardContent>
         </Card>
