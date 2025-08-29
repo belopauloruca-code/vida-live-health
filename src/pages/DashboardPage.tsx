@@ -21,6 +21,7 @@ export const DashboardPage: React.FC = () => {
   const [profile, setProfile] = useState<any>(null);
   const [hydrationToday, setHydrationToday] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3850);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -85,23 +86,10 @@ export const DashboardPage: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado com sucesso",
-      });
-      
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro ao sair",
-        description: error.message,
-      });
-    }
+    setIsLoggingOut(true);
+    const { robustLogout } = await import('@/utils/auth');
+    await robustLogout(navigate);
+    setIsLoggingOut(false);
   };
 
   const waterProgress = Math.min((hydrationToday / waterGoal) * 100, 100);
@@ -137,10 +125,11 @@ export const DashboardPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="flex items-center gap-2"
+            disabled={isLoggingOut}
+            className="flex items-center gap-2 disabled:opacity-50"
           >
             <LogOut className="h-4 w-4" />
-            Sair
+            {isLoggingOut ? 'Saindo...' : 'Sair'}
           </Button>
         </div>
         

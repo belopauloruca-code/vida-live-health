@@ -15,6 +15,7 @@ export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notifications, setNotifications] = useState({
     water: true,
     meals: true,
@@ -22,20 +23,10 @@ export const SettingsPage: React.FC = () => {
   });
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Logout realizado",
-        description: "Até logo! Volte sempre ao Vida Live.",
-      });
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no logout",
-        description: error.message,
-      });
-    }
+    setIsLoggingOut(true);
+    const { robustLogout } = await import('@/utils/auth');
+    await robustLogout(navigate);
+    setIsLoggingOut(false);
   };
 
   const exportData = async () => {
@@ -214,10 +205,11 @@ export const SettingsPage: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={handleLogout}
-              className="w-full border-red-200 text-red-600 hover:bg-red-50"
+              disabled={isLoggingOut}
+              className="w-full border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Sair da Conta
+              {isLoggingOut ? 'Saindo da conta...' : 'Sair da Conta'}
             </Button>
           </CardContent>
         </Card>

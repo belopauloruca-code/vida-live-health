@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -22,22 +22,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Logout realizado",
-        description: "Sessão admin encerrada com sucesso.",
-      });
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erro no logout",
-        description: error.message,
-      });
-    }
+    setIsLoggingOut(true);
+    const { robustLogout } = await import('@/utils/auth');
+    await robustLogout(navigate);
+    setIsLoggingOut(false);
   };
 
   const menuItems = [
@@ -82,11 +73,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="absolute bottom-6 left-6 right-6">
           <Button
             variant="outline"
-            className="w-full border-red-200 text-red-600 hover:bg-red-50"
+            className="w-full border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
             onClick={handleLogout}
+            disabled={isLoggingOut}
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Sair
+            {isLoggingOut ? 'Saindo...' : 'Sair'}
           </Button>
         </div>
       </div>
