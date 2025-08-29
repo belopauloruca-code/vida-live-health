@@ -5,24 +5,30 @@ import { Clock, Crown, CheckCircle } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useTrial } from '@/hooks/useTrial';
 import { useNavigate } from 'react-router-dom';
-
 export const TrialBanner: React.FC = () => {
-  const { hasPremiumAccess, hasActiveSubscription, isTrialActive, isLoading, isLifetime } = usePremiumAccess();
-  const { formatTimeRemaining, isTrialExpired } = useTrial();
+  const {
+    hasPremiumAccess,
+    hasActiveSubscription,
+    isTrialActive,
+    isLoading,
+    isLifetime
+  } = usePremiumAccess();
+  const {
+    formatTimeRemaining,
+    isTrialExpired
+  } = useTrial();
   const navigate = useNavigate();
-
   if (isLoading) return null;
 
   // Se tem assinatura ativa, mostrar status premium
   if (hasActiveSubscription) {
-    return (
-      <Card className="border-primary bg-primary/10 mb-4">
+    return <Card className="border-primary bg-primary/10 mb-4">
         <CardContent className="pt-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-primary" />
               <div>
-                <p className="font-medium text-primary-foreground">
+                <p className="font-medium text-lime-600">
                   {isLifetime ? 'Acesso Vitalício' : 'Premium Ativo'}
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -30,23 +36,15 @@ export const TrialBanner: React.FC = () => {
                 </p>
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate('/settings')}
-              className="border-primary text-primary hover:bg-primary/10"
-            >
+            <Button size="sm" variant="outline" onClick={() => navigate('/settings')} className="border-primary text-primary hover:bg-primary/10">
               Gerenciar
             </Button>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
   if (isTrialActive) {
-    return (
-      <Card className="border-accent bg-accent/10 mb-4">
+    return <Card className="border-accent bg-accent/10 mb-4">
         <CardContent className="pt-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -59,22 +57,15 @@ export const TrialBanner: React.FC = () => {
                 </div>
               </div>
             </div>
-            <Button
-              size="sm"
-              onClick={() => navigate('/subscription')}
-              className="bg-accent hover:bg-accent/90"
-            >
+            <Button size="sm" onClick={() => navigate('/subscription')} className="bg-accent hover:bg-accent/90">
               Assinar Agora
             </Button>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
   if (isTrialExpired) {
-    return (
-      <Card className="border-destructive bg-destructive/10 mb-4">
+    return <Card className="border-destructive bg-destructive/10 mb-4">
         <CardContent className="pt-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -86,18 +77,12 @@ export const TrialBanner: React.FC = () => {
                 </p>
               </div>
             </div>
-            <Button
-              size="sm"
-              onClick={() => navigate('/subscription')}
-              className="bg-primary hover:bg-primary/90"
-            >
+            <Button size="sm" onClick={() => navigate('/subscription')} className="bg-primary hover:bg-primary/90">
               Assinar Premium
             </Button>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
   return null;
 };
