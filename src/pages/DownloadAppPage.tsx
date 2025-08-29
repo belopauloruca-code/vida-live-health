@@ -1,62 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { BrandHeader } from '@/components/ui/brand-header';
+import { InstallAppButton } from '@/components/ui/install-app-button';
 import { Smartphone, Download, QrCode, Zap, Wifi, Timer, Cloud, Share2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export const DownloadAppPage: React.FC = () => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [canInstallPWA, setCanInstallPWA] = useState(false);
-  const [isInstalling, setIsInstalling] = useState(false);
-  
-  // PWA installation prompt handling
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setCanInstallPWA(true);
-    };
-
-    const handleAppInstalled = () => {
-      setDeferredPrompt(null);
-      setCanInstallPWA(false);
-      toast.success('App instalado com sucesso!');
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
-  }, []);
-
-  const handlePWAInstall = async () => {
-    if (!deferredPrompt) return;
-    
-    setIsInstalling(true);
-    
-    try {
-      const { outcome } = await deferredPrompt.prompt();
-      
-      if (outcome === 'accepted') {
-        toast.success('Instalação iniciada!');
-      } else {
-        toast.info('Instalação cancelada.');
-      }
-      
-      setDeferredPrompt(null);
-      setCanInstallPWA(false);
-    } catch (error) {
-      toast.error('Erro na instalação. Tente pelo menu do navegador.');
-    } finally {
-      setIsInstalling(false);
-    }
-  };
   
   const generateQRCodeUrl = (url: string) => {
     return `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(url)}`;
@@ -89,27 +39,14 @@ export const DownloadAppPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {canInstallPWA ? (
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground mb-4"
-                  onClick={handlePWAInstall}
-                  disabled={isInstalling}
+              <div className="mb-6">
+                <InstallAppButton 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   size="lg"
-                >
-                  {isInstalling ? (
-                    <>
-                      <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                      Instalando...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4 mr-2" />
-                      Instalar App (PWA)
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <div className="space-y-4">
+                />
+              </div>
+              
+              <div className="space-y-4">
                   {/* Android Instructions */}
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <h4 className="font-semibold text-foreground mb-2 flex items-center">
@@ -149,7 +86,6 @@ export const DownloadAppPage: React.FC = () => {
                     </ol>
                   </div>
                 </div>
-              )}
               
               {/* QR Code for easy mobile access */}
               <div className="flex justify-center mt-6">
