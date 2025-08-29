@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Shield } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -42,21 +43,45 @@ export const AdminLoginPage: React.FC = () => {
   const onSubmit = async (data: LoginForm) => {
     setIsLoading(true);
     try {
-      // For now, we'll use a simple check since we need to implement proper admin auth
-      if (data.email === 'admin@vidaleve.com' && data.password === 'admin123') {
-        // Mock admin login - in production this should use proper authentication
-        toast({
-          title: 'Login realizado com sucesso',
-          description: 'Bem-vindo ao painel administrativo',
-        });
-        navigate('/admin');
-      } else {
+      // Sign in with Supabase
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
         toast({
           title: 'Erro no login',
-          description: 'Email ou senha incorretos',
+          description: error.message,
           variant: 'destructive',
         });
+        return;
       }
+
+      // Check if user has admin role
+      const { data: userRoles, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (roleError || !userRoles) {
+        // Sign out the user if they don't have admin role
+        await supabase.auth.signOut();
+        toast({
+          title: 'Acesso negado',
+          description: 'Você não tem permissão para acessar o painel administrativo',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Login realizado com sucesso',
+        description: 'Bem-vindo ao painel administrativo',
+      });
+      navigate('/admin');
     } catch (error) {
       toast({
         title: 'Erro no login',
@@ -115,9 +140,9 @@ export const AdminLoginPage: React.FC = () => {
               </Button>
             </form>
           </Form>
-          <div className="mt-4 text-sm text-gray-600 text-center">
-            <p>Email: admin@vidaleve.com</p>
-            <p>Senha: admin123</p>
+          <div className="mt-4 text-sm text-muted-foreground text-center">
+            <p>Use suas credenciais de usuário registrado.</p>
+            <p>Somente administradores podem acessar este painel.</p>
           </div>
         </CardContent>
       </Card>
