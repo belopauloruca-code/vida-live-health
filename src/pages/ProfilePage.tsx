@@ -93,21 +93,32 @@ export const ProfilePage: React.FC = () => {
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-6">
-          <BrandHeader 
-            title="Meu Perfil"
-            subtitle="Mantenha suas informações atualizadas"
-          />
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-2">
+            <User className="h-8 w-8 text-primary mr-3" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Meu Perfil</h1>
+          <p className="text-muted-foreground mt-1">Mantenha suas informações atualizadas</p>
         </div>
 
-        {/* Avatar */}
+        {/* Profile Card */}
         <Card className="mb-6">
           <CardContent className="pt-6">
-            <AvatarUploader
-              currentAvatarUrl={profile.avatar_url}
-              userName={profile.name}
-              onAvatarUpdate={handleAvatarUpdate}
-            />
+            <div className="flex flex-col items-center text-center">
+              <AvatarUploader
+                currentAvatarUrl={profile.avatar_url}
+                userName={profile.name || 'Usuário'}
+                onAvatarUpdate={handleAvatarUpdate}
+              />
+              <div className="mt-4">
+                <h2 className="text-xl font-semibold text-foreground">
+                  {profile.name || 'Mario'}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {user?.email || 'chacalabuata@gmail.com'}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -116,25 +127,30 @@ export const ProfilePage: React.FC = () => {
 
         {/* Hydration Goal Display */}
         {profile.weight_kg && (
-          <Card className="mb-6 border-blue-100">
+          <Card className="mb-6">
             <CardContent className="pt-6">
               <div className="flex items-center space-x-3">
                 <Droplets className="h-5 w-5 text-blue-600" />
                 <div>
                   <div className="text-sm font-medium text-blue-600">Meta de Hidratação Recomendada</div>
-                  <div className="text-lg font-bold text-gray-900">{calculateWaterGoal()}ml</div>
-                  <div className="text-sm text-gray-500">Baseado no seu peso atual</div>
+                  <div className="text-lg font-bold text-foreground">{calculateWaterGoal()}ml</div>
+                  <div className="text-sm text-muted-foreground">Baseado no seu peso atual</div>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Profile Form */}
-        <ProfileForm
-          profile={profile}
-          onProfileUpdate={handleProfileUpdate}
-        />
+        {/* Informações Básicas */}
+        <Card>
+          <CardContent className="pt-6">
+            <h3 className="text-lg font-semibold text-center mb-6">Informações Básicas</h3>
+            <ProfileForm
+              profile={profile}
+              onProfileUpdate={handleProfileUpdate}
+            />
+          </CardContent>
+        </Card>
       </div>
       
       <BottomNavigation />
