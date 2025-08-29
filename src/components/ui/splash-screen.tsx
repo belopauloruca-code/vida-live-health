@@ -28,7 +28,11 @@ export const SplashScreen: React.FC = () => {
     <div className="fixed inset-0 z-[9999] bg-background flex items-center justify-center">
       <div className="text-center animate-fade-in">
         <div className="mb-4 flex justify-center">
-          <Logo size="xl" className="drop-shadow-lg" />
+          <img 
+            src="/logo-splash-1024.png" 
+            alt="Vida Live" 
+            className="w-32 h-32 object-contain drop-shadow-lg"
+          />
         </div>
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
       </div>

@@ -13,8 +13,8 @@ const sizeClasses = {
 };
 
 export const Logo: React.FC<LogoProps> = ({ className = '', size = 'md' }) => {
-  // Try multiple logo sources with fallbacks
-  const logoSrc = "/lovable-uploads/6adff54d-a871-4013-b61d-151fd65d71ca.png";
+  // Use the new generated logo with fallback
+  const logoSrc = "/logo-icon-512.png";
   const fallbackSrc = "/pwa-192x192.png";
   
   return (
