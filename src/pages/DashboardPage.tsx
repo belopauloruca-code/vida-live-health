@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -27,10 +26,20 @@ export const DashboardPage: React.FC = () => {
   const [hydrationToday, setHydrationToday] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3850);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [mealPlanStats, setMealPlanStats] = useState({ meals: 0, recipes: 0, duration: 0 });
 
   useEffect(() => {
-    loadProfile();
-    loadHydrationToday();
+    if (user) {
+      loadProfile();
+      loadHydrationToday();
+      loadMealPlanStats();
+      setupRealtimeSubscriptions();
+    }
+    
+    return () => {
+      // Cleanup subscriptions
+      supabase.removeAllChannels();
+    };
   }, [user]);
 
   const loadProfile = async () => {
@@ -63,6 +72,94 @@ export const DashboardPage: React.FC = () => {
       const total = data.reduce((sum, log) => sum + (log.amount_ml || 0), 0);
       setHydrationToday(total);
     }
+  };
+
+  const loadMealPlanStats = async () => {
+    if (!user) return;
+    
+    const { data: mealPlans, error } = await supabase
+      .from('meal_plans')
+      .select(`
+        *,
+        meal_plan_items(*)
+      `)
+      .eq('user_id', user.id)
+      .order('start_date', { ascending: false })
+      .limit(1);
+    
+    if (error) {
+      console.error('Error loading meal plan stats:', error);
+      return;
+    }
+    
+    if (mealPlans && mealPlans.length > 0) {
+      const plan = mealPlans[0];
+      const items = plan.meal_plan_items || [];
+      const startDate = new Date(plan.start_date);
+      const endDate = new Date(plan.end_date);
+      const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      setMealPlanStats({
+        meals: plan.meals_per_day || 4,
+        recipes: items.length,
+        duration: duration
+      });
+    }
+  };
+
+  const setupRealtimeSubscriptions = () => {
+    if (!user) return;
+    
+    // Subscribe to hydration changes
+    const hydrationChannel = supabase
+      .channel('hydration-changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'hydration_logs',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => {
+          loadHydrationToday();
+        }
+      )
+      .subscribe();
+    
+    // Subscribe to profile changes (for water goal updates)
+    const profileChannel = supabase
+      .channel('profile-changes')
+      .on('postgres_changes', 
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'profiles',
+          filter: `id=eq.${user.id}`
+        }, 
+        (payload) => {
+          if (payload.new.water_goal_ml !== waterGoal) {
+            setWaterGoal(payload.new.water_goal_ml || 2500);
+          }
+          setProfile(payload.new);
+        }
+      )
+      .subscribe();
+    
+    // Subscribe to meal plan changes
+    const mealPlanChannel = supabase
+      .channel('meal-plan-changes')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'meal_plans',
+          filter: `user_id=eq.${user.id}`
+        }, 
+        () => {
+          loadMealPlanStats();
+        }
+      )
+      .subscribe();
   };
 
   const addWater = async (amount: number) => {
@@ -112,8 +209,14 @@ export const DashboardPage: React.FC = () => {
       >
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center text-white">
-            <h1 className="text-3xl font-bold mb-2">Vida Live</h1>
-            <p className="text-lg opacity-90">Sua jornada de saúde começa aqui</p>
+            <h1 className="text-3xl font-bold mb-2">{t('dashboard.banner.title')}</h1>
+            <p className="text-lg opacity-90">{t('dashboard.banner.subtitle')}</p>
+            <Button 
+              className="mt-4 bg-white text-green-600 hover:bg-gray-100" 
+              onClick={() => navigate('/subscription')}
+            >
+              {t('dashboard.banner.cta')}
+            </Button>
           </div>
         </div>
       </div>
@@ -166,7 +269,7 @@ export const DashboardPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">4</div>
+              <div className="text-2xl font-bold text-gray-900">{mealPlanStats.meals}</div>
               <p className="text-xs text-gray-500">por dia</p>
             </CardContent>
           </Card>
@@ -179,7 +282,7 @@ export const DashboardPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">7</div>
+              <div className="text-2xl font-bold text-gray-900">{mealPlanStats.duration}</div>
               <p className="text-xs text-gray-500">dias</p>
             </CardContent>
           </Card>
@@ -191,7 +294,7 @@ export const DashboardPage: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">50+</div>
+              <div className="text-2xl font-bold text-gray-900">{mealPlanStats.recipes || '50+'}</div>
               <p className="text-xs text-gray-500">disponíveis</p>
             </CardContent>
           </Card>

@@ -55,6 +55,11 @@
   "dashboard": {
     "welcome": "Welcome",
     "logout": "Logout",
+    "banner": {
+      "title": "Vida Leve",
+      "subtitle": "Transform your body and mind with our revolutionary weight loss app",
+      "cta": "Start your journey today"
+    },
     "stats": {
       "caloricGoal": "Caloric Goal",
       "meals": "Meals",

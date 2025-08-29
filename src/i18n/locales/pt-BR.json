@@ -55,6 +55,11 @@
   "dashboard": {
     "welcome": "Bem-vindo",
     "logout": "Sair",
+    "banner": {
+      "title": "Vida Leve",
+      "subtitle": "Transforme seu corpo e mente com nosso app revolucionário de emagrecimento",
+      "cta": "Comece sua jornada hoje"
+    },
     "stats": {
       "caloricGoal": "Meta Calórica",
       "meals": "Refeições",
