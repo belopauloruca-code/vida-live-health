@@ -402,59 +402,75 @@ export const ExercisesPage: React.FC = () => {
                   {(() => {
                     const source = getEmbedSource(selectedVideoExercise.video_url || '');
                     
-                    // Special case for "Flexões + Prancha"
+                    // Special case for "Flexões + Prancha" with Google Drive video
                     if (selectedVideoExercise.title === 'Flexões + Prancha') {
                       return (
-                        <Tabs defaultValue="flexoes" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="flexoes">Flexões</TabsTrigger>
-                            <TabsTrigger value="prancha">Prancha</TabsTrigger>
-                          </TabsList>
-                          <TabsContent value="flexoes" className="space-y-4">
-                            <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                              <video
-                                controls
-                                className="w-full h-full object-cover"
-                                poster="/api/placeholder/640/360"
-                                preload="metadata"
-                              >
-                                <source src="/videos/flexoes-demo.mp4" type="video/mp4" />
-                                Seu navegador não suporta vídeos.
-                              </video>
-                            </div>
-                            {selectedVideoExercise.video_url && (
-                              <Button
-                                variant="outline"
-                                onClick={() => window.open(selectedVideoExercise.video_url, '_blank')}
-                                className="w-full"
-                              >
-                                Abrir no YouTube
-                              </Button>
-                            )}
-                          </TabsContent>
-                          <TabsContent value="prancha" className="space-y-4">
-                            <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                              <video
-                                controls
-                                className="w-full h-full object-cover"
-                                poster="/api/placeholder/640/360"
-                                preload="metadata"
-                              >
-                                <source src="/videos/prancha-demo.mp4" type="video/mp4" />
-                                Seu navegador não suporta vídeos.
-                              </video>
-                            </div>
-                            {selectedVideoExercise.video_url && (
-                              <Button
-                                variant="outline"
-                                onClick={() => window.open(selectedVideoExercise.video_url, '_blank')}
-                                className="w-full"
-                              >
-                                Abrir no YouTube
-                              </Button>
-                            )}
-                          </TabsContent>
-                        </Tabs>
+                        <div className="space-y-6">
+                          {/* Main Google Drive Video */}
+                          {selectedVideoExercise.video_url && (() => {
+                            const mainSource = getEmbedSource(selectedVideoExercise.video_url);
+                            if (mainSource.type === 'gdrive') {
+                              return (
+                                <div className="space-y-4">
+                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                    <iframe
+                                      src={mainSource.src}
+                                      className="w-full h-full"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                      referrerPolicy="strict-origin-when-cross-origin"
+                                      allowFullScreen
+                                    />
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => window.open(mainSource.originalUrl, '_blank')}
+                                    className="w-full"
+                                  >
+                                    Abrir no Google Drive
+                                  </Button>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+
+                          {/* Local Demo Videos */}
+                          <div className="border-t pt-4">
+                            <h4 className="text-sm font-medium text-gray-600 mb-3">Vídeos de demonstração adicionais:</h4>
+                            <Tabs defaultValue="flexoes" className="w-full">
+                              <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="flexoes">Flexões</TabsTrigger>
+                                <TabsTrigger value="prancha">Prancha</TabsTrigger>
+                              </TabsList>
+                              <TabsContent value="flexoes" className="space-y-4">
+                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                  <video
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    poster="/api/placeholder/640/360"
+                                    preload="metadata"
+                                  >
+                                    <source src="/videos/flexoes-demo.mp4" type="video/mp4" />
+                                    Seu navegador não suporta vídeos.
+                                  </video>
+                                </div>
+                              </TabsContent>
+                              <TabsContent value="prancha" className="space-y-4">
+                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                  <video
+                                    controls
+                                    className="w-full h-full object-cover"
+                                    poster="/api/placeholder/640/360"
+                                    preload="metadata"
+                                  >
+                                    <source src="/videos/prancha-demo.mp4" type="video/mp4" />
+                                    Seu navegador não suporta vídeos.
+                                  </video>
+                                </div>
+                              </TabsContent>
+                            </Tabs>
+                          </div>
+                        </div>
                       );
                     }
                     
