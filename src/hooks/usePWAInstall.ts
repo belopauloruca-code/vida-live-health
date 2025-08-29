@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 export const usePWAInstall = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -7,8 +7,9 @@ export const usePWAInstall = () => {
   const [isInstalling, setIsInstalling] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [platform, setPlatform] = useState<'ios' | 'android' | 'desktop' | 'unknown'>('unknown');
+  const [isInIframe, setIsInIframe] = useState(false);
 
-  // Detect platform
+  // Detect platform and installation status
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
@@ -23,9 +24,15 @@ export const usePWAInstall = () => {
       setPlatform('desktop');
     }
 
-    // Check if already installed (standalone mode)
+    // Check if in iframe (preview mode)
+    const inIframe = window.self !== window.top;
+    setIsInIframe(inIframe);
+
+    // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    if (isStandalone) {
+    const isIOSStandalone = isIOS && (window.navigator as any).standalone;
+    
+    if (isStandalone || isIOSStandalone) {
       setIsInstalled(true);
     }
   }, []);
@@ -42,7 +49,11 @@ export const usePWAInstall = () => {
       setDeferredPrompt(null);
       setCanInstallPWA(false);
       setIsInstalled(true);
-      toast.success('App instalado com sucesso!');
+      setIsInstalling(false);
+      toast({
+        title: "Instalação concluída!",
+        description: "Seja bem-vindo à Vida Leve! O app está pronto para usar.",
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -59,56 +70,79 @@ export const usePWAInstall = () => {
     
     setIsInstalling(true);
     
+    // Show installing toast
+    toast({
+      title: "Instalando Vida Leve...",
+      description: "Por favor, aguarde enquanto o app está sendo instalado.",
+    });
+    
     try {
-      const { outcome } = await deferredPrompt.prompt();
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
       
       if (outcome === 'accepted') {
-        toast.success('Instalação iniciada!');
+        // Keep showing installing state, success will be handled by appinstalled event
         return true;
       } else {
-        toast.info('Instalação cancelada.');
+        setIsInstalling(false);
+        toast({
+          title: "Instalação cancelada",
+          description: "Você pode tentar instalar novamente quando quiser.",
+        });
         return false;
       }
     } catch (error) {
-      toast.error('Erro na instalação. Tente pelo menu do navegador.');
+      setIsInstalling(false);
+      toast({
+        title: "Erro na instalação",
+        description: "Tente pelo menu do navegador ou abra em nova aba.",
+        variant: "destructive",
+      });
       return false;
     } finally {
-      setIsInstalling(false);
       setDeferredPrompt(null);
       setCanInstallPWA(false);
     }
   }, [deferredPrompt]);
 
   const getInstallInstructions = useCallback(() => {
-    switch (platform) {
-      case 'ios':
-        return [
-          'Toque no botão de compartilhar (□↗)',
-          'Role e selecione "Adicionar à Tela de Início"',
-          'Toque em "Adicionar"'
-        ];
-      case 'android':
-        return [
-          'Toque no menu (⋮) do navegador',
-          'Selecione "Instalar app" ou "Adicionar à tela inicial"',
-          'Confirme a instalação'
-        ];
-      case 'desktop':
-        return [
-          'Procure o ícone de instalação (⊕) na barra de endereços',
-          'Ou use o menu do navegador → "Instalar Vida Live"',
-          'Confirme a instalação'
-        ];
-      default:
-        return ['Use o menu do seu navegador para instalar o app'];
+    const baseInstructions = {
+      ios: [
+        'Toque no botão de compartilhar (□↗)',
+        'Role e selecione "Adicionar à Tela de Início"',
+        'Toque em "Adicionar"'
+      ],
+      android: [
+        'Toque no menu (⋮) do navegador',
+        'Selecione "Instalar app" ou "Adicionar à tela inicial"',
+        'Confirme a instalação'
+      ],
+      desktop: [
+        'Procure o ícone de instalação (⊕) na barra de endereços',
+        'Ou use o menu do navegador → "Instalar Vida Leve"',
+        'Confirme a instalação'
+      ],
+      default: ['Use o menu do seu navegador para instalar o app']
+    };
+
+    const instructions = baseInstructions[platform] || baseInstructions.default;
+    
+    if (isInIframe) {
+      return [
+        'Abra o app em uma nova aba para instalar',
+        ...instructions
+      ];
     }
-  }, [platform]);
+    
+    return instructions;
+  }, [platform, isInIframe]);
 
   return {
     canInstallPWA,
     isInstalling,
     isInstalled,
     platform,
+    isInIframe,
     installPWA,
     getInstallInstructions
   };

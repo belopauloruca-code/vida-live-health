@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 
 export const PWAUpdater = () => {
   const {
@@ -18,7 +18,8 @@ export const PWAUpdater = () => {
 
   useEffect(() => {
     if (offlineReady) {
-      toast.success('App pronta para usar offline!', {
+      toast({
+        title: 'App pronta para usar offline!',
         description: 'Todos os recursos estão disponíveis offline.',
       });
     }
@@ -26,13 +27,17 @@ export const PWAUpdater = () => {
 
   useEffect(() => {
     if (needRefresh) {
-      toast('Nova versão disponível!', {
+      toast({
+        title: 'Nova versão disponível!',
         description: 'Clique para atualizar para a versão mais recente.',
-        action: {
-          label: 'Atualizar',
-          onClick: () => updateServiceWorker(true),
-        },
-        duration: 0, // Keep toast until user acts
+        action: (
+          <button 
+            onClick={() => updateServiceWorker(true)}
+            className="inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+          >
+            Atualizar
+          </button>
+        ),
       });
     }
   }, [needRefresh, updateServiceWorker]);

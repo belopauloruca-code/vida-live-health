@@ -15,7 +15,7 @@ export const InstallAppButton: React.FC<InstallAppButtonProps> = ({
   size = 'default',
   variant = 'default'
 }) => {
-  const { canInstallPWA, isInstalling, isInstalled, platform, installPWA, getInstallInstructions } = usePWAInstall();
+  const { canInstallPWA, isInstalling, isInstalled, platform, isInIframe, installPWA, getInstallInstructions } = usePWAInstall();
   const [showInstructions, setShowInstructions] = useState(false);
 
   const handleInstallClick = async () => {
@@ -89,7 +89,7 @@ export const InstallAppButton: React.FC<InstallAppButtonProps> = ({
               <span className="ml-2">Como Instalar</span>
             </DialogTitle>
             <DialogDescription>
-              Instruções para {getPlatformName()}
+              {isInIframe ? 'Para instalar o app, você precisa abri-lo em uma nova aba' : `Instruções para ${getPlatformName()}`}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -102,6 +102,15 @@ export const InstallAppButton: React.FC<InstallAppButtonProps> = ({
                 ))}
               </ol>
             </div>
+            {isInIframe && (
+              <Button 
+                variant="default" 
+                className="w-full mb-2" 
+                onClick={() => window.open(window.location.href, '_blank')}
+              >
+                Abrir em Nova Aba
+              </Button>
+            )}
             <Button 
               variant="outline" 
               className="w-full" 
