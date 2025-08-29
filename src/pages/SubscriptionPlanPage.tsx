@@ -4,15 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Crown, Zap, Star, RefreshCw, CheckCircle, ExternalLink } from 'lucide-react';
+import { Crown, Zap, Star, RefreshCw, CheckCircle, ExternalLink, Infinity } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 export const SubscriptionPlanPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isLifetime } = usePremiumAccess();
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -226,21 +228,32 @@ export const SubscriptionPlanPage: React.FC = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Crown className="h-5 w-5 text-primary mr-2" />
+                  {isLifetime ? (
+                    <Infinity className="h-5 w-5 text-primary mr-2" />
+                  ) : (
+                    <Crown className="h-5 w-5 text-primary mr-2" />
+                  )}
                   <div>
-                    <CardTitle className="text-lg">Assinatura Ativa</CardTitle>
+                    <CardTitle className="text-lg">
+                      {isLifetime ? 'Acesso Vitalício' : 'Assinatura Ativa'}
+                    </CardTitle>
                     <CardDescription>
                       Plano {subscription.subscription_tier || 'Premium'} • 
-                      {subscription.subscription_end ? 
-                        ` Renova em ${new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}` : 
-                        ' Assinatura ativa'
+                      {isLifetime ? 
+                        ' Acesso permanente' :
+                        subscription.subscription_end ? 
+                          ` Renova em ${new Date(subscription.subscription_end).toLocaleDateString('pt-BR')}` : 
+                          ' Assinatura ativa'
                       }
                     </CardDescription>
                   </div>
                 </div>
                 <Badge className="bg-primary text-primary-foreground">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Ativo
+                  {isLifetime ? (
+                    <><Infinity className="h-3 w-3 mr-1" />Vitalício</>
+                  ) : (
+                    <><CheckCircle className="h-3 w-3 mr-1" />Ativo</>
+                  )}
                 </Badge>
               </div>
             </CardHeader>
@@ -252,6 +265,7 @@ export const SubscriptionPlanPage: React.FC = () => {
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = subscription && subscription.subscription_tier === plan.name;
+            const shouldDisableButton = isCurrentPlan || (isLifetime && subscription?.subscription_tier === 'elite');
             
             return (
               <Card 
@@ -293,9 +307,14 @@ export const SubscriptionPlanPage: React.FC = () => {
                     className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => handleSubscribe(plan.stripeUrl)}
-                    disabled={isCurrentPlan}
+                    disabled={shouldDisableButton}
                   >
-                    {isCurrentPlan ? (
+                    {isCurrentPlan && isLifetime ? (
+                      <>
+                        <Infinity className="h-4 w-4 mr-2" />
+                        Acesso Vitalício
+                      </>
+                    ) : isCurrentPlan ? (
                       <>
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Plano Atual

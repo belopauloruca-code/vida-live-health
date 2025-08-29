@@ -10,12 +10,14 @@ import { BottomNavigation } from '@/components/layout/BottomNavigation';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Droplets, Target, Calendar, Activity, Plus, LogOut } from 'lucide-react';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { Droplets, Target, Calendar, Activity, Plus, LogOut, Lock } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { hasActiveSubscription } = usePremiumAccess();
   const [profile, setProfile] = useState<any>(null);
   const [hydrationToday, setHydrationToday] = useState(0);
   const [waterGoal, setWaterGoal] = useState(3850);
@@ -287,13 +289,29 @@ export const DashboardPage: React.FC = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4">
-          <Button 
-            variant="outline" 
-            className="h-16 border-green-200 hover:bg-green-50"
-            onClick={() => window.location.href = '/meal-plans'}
-          >
-            Ver Planos
-          </Button>
+          {hasActiveSubscription ? (
+            <Button 
+              variant="outline" 
+              className="h-16 border-green-200 hover:bg-green-50"
+              onClick={() => window.location.href = '/meal-plans'}
+            >
+              Ver Planos
+            </Button>
+          ) : (
+            <Card className="h-16 flex items-center justify-center border-gray-200 bg-gray-50">
+              <CardContent className="flex items-center gap-2 p-0">
+                <Lock className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-500">Ver Planos</span>
+                <Button 
+                  size="sm" 
+                  variant="default"
+                  onClick={() => navigate('/subscription')}
+                >
+                  Assinar
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           <Button 
             variant="outline" 
             className="h-16 border-green-200 hover:bg-green-50"

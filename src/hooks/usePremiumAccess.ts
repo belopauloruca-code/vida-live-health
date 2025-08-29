@@ -19,6 +19,7 @@ export const usePremiumAccess = () => {
   const { isTrialActive, isLoading: trialLoading } = useTrial();
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(null);
+  const [isLifetime, setIsLifetime] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkSubscription = async () => {
@@ -67,6 +68,7 @@ export const usePremiumAccess = () => {
 
       setHasActiveSubscription(isValidSubscription);
       setSubscriptionTier(tier);
+      setIsLifetime(data?.subscription_end === null && isValidSubscription);
     } catch (error) {
       console.error('Error checking subscription:', error);
       setHasActiveSubscription(false);
@@ -80,7 +82,13 @@ export const usePremiumAccess = () => {
     if (!user) return;
     
     try {
-      await supabase.functions.invoke('check-subscription');
+      const response = await supabase.functions.invoke('check-subscription');
+      if (response.data) {
+        const { subscribed, subscription_tier, subscription_end, isLifetime: lifetime } = response.data;
+        setHasActiveSubscription(subscribed || false);
+        setSubscriptionTier(subscription_tier || null);
+        setIsLifetime(lifetime || subscription_end === null);
+      }
       // Recheck subscription after sync
       setTimeout(() => {
         checkSubscription();
@@ -138,6 +146,7 @@ export const usePremiumAccess = () => {
     hasBasicAccess,
     hasPremiumAccess_Level,
     hasEliteAccess,
+    isLifetime,
     isLoading: isLoading || trialLoading
   };
 };
