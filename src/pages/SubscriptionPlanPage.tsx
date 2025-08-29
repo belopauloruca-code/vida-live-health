@@ -197,7 +197,7 @@ export const SubscriptionPlanPage: React.FC = () => {
       id: 'elite',
       name: 'Elite',
       price: '€36.99',
-      period: '/mês',
+      period: '/anual',
       popular: false,
       features: [
         'Tudo do Premium',

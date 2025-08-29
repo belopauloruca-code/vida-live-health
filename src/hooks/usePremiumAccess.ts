@@ -12,10 +12,13 @@ interface Subscriber {
   subscription_end: string | null;
 }
 
+type SubscriptionTier = 'basic' | 'premium' | 'elite' | null;
+
 export const usePremiumAccess = () => {
   const { user } = useAuth();
   const { isTrialActive, isLoading: trialLoading } = useTrial();
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkSubscription = async () => {
@@ -39,6 +42,8 @@ export const usePremiumAccess = () => {
 
       // Check if subscription is still valid (if subscription_end exists)
       let isValidSubscription = false;
+      let tier: SubscriptionTier = null;
+      
       if (data) {
         if (data.subscription_end) {
           isValidSubscription = new Date(data.subscription_end) > new Date();
@@ -46,9 +51,22 @@ export const usePremiumAccess = () => {
           // If no end date, assume it's active
           isValidSubscription = true;
         }
+        
+        // Normalize subscription tier
+        if (isValidSubscription && data.subscription_tier) {
+          const tierName = data.subscription_tier.toLowerCase();
+          if (tierName.includes('basic') || tierName.includes('básico')) {
+            tier = 'basic';
+          } else if (tierName.includes('premium')) {
+            tier = 'premium';
+          } else if (tierName.includes('elite')) {
+            tier = 'elite';
+          }
+        }
       }
 
       setHasActiveSubscription(isValidSubscription);
+      setSubscriptionTier(tier);
     } catch (error) {
       console.error('Error checking subscription:', error);
       setHasActiveSubscription(false);
@@ -106,11 +124,20 @@ export const usePremiumAccess = () => {
   }, [user]);
 
   const hasPremiumAccess = isTrialActive || hasActiveSubscription;
+  
+  // Check access levels based on subscription tier
+  const hasBasicAccess = hasPremiumAccess;
+  const hasPremiumAccess_Level = hasPremiumAccess && (subscriptionTier === 'premium' || subscriptionTier === 'elite');
+  const hasEliteAccess = hasPremiumAccess && subscriptionTier === 'elite';
 
   return {
     hasPremiumAccess,
     hasActiveSubscription,
     isTrialActive,
+    subscriptionTier,
+    hasBasicAccess,
+    hasPremiumAccess_Level,
+    hasEliteAccess,
     isLoading: isLoading || trialLoading
   };
 };

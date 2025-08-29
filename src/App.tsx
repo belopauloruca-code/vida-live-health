@@ -43,12 +43,12 @@ function App() {
               
               {/* Protected user routes */}
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/meal-plans" element={<ProtectedRoute><MealPlansPage /></ProtectedRoute>} />
-              <Route path="/exercises" element={<ProtectedRoute requirePremium><ExercisesPage /></ProtectedRoute>} />
-              <Route path="/download-app" element={<ProtectedRoute requirePremium><DownloadAppPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute requirePremium><ProfilePage /></ProtectedRoute>} />
+              <Route path="/meal-plans" element={<ProtectedRoute requireTier="basic"><MealPlansPage /></ProtectedRoute>} />
+              <Route path="/exercises" element={<ProtectedRoute requireTier="basic"><ExercisesPage /></ProtectedRoute>} />
+              <Route path="/download-app" element={<ProtectedRoute requireTier="basic"><DownloadAppPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute requireTier="basic"><ProfilePage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-              <Route path="/ai-assistant" element={<ProtectedRoute requirePremium><AIAssistantPage /></ProtectedRoute>} />
+              <Route path="/ai-assistant" element={<ProtectedRoute requireTier="premium"><AIAssistantPage /></ProtectedRoute>} />
               <Route path="/subscription" element={<ProtectedRoute><SubscriptionPlanPage /></ProtectedRoute>} />
               
               {/* Admin routes */}

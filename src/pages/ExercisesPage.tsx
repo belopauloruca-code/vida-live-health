@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { getEmbedSource } from '@/utils/videoUtils';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { SubscriptionContentGate } from '@/components/ui/subscription-content-gate';
 
 interface Exercise {
   id: string;
@@ -27,6 +29,7 @@ interface Exercise {
 export const ExercisesPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { hasBasicAccess, hasPremiumAccess_Level, hasEliteAccess } = usePremiumAccess();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTimer, setActiveTimer] = useState<string | null>(null);
@@ -121,7 +124,28 @@ export const ExercisesPage: React.FC = () => {
   };
 
   const getExercisesByCategory = (category: string) => {
-    return exercises.filter(ex => ex.category === category);
+    const categoryExercises = exercises.filter(ex => ex.category === category);
+    
+    // Limit exercises based on subscription tier
+    if (!hasEliteAccess) {
+      if (category === 'Cardio' && !hasPremiumAccess_Level) {
+        return categoryExercises.slice(0, 2); // Basic: only 2 cardio exercises
+      }
+      if (category === 'Força' && !hasEliteAccess) {
+        return categoryExercises.slice(0, hasBasicAccess ? 3 : 0); // Basic: 3, Premium: all, Elite: all
+      }
+      if (category === 'Recomendados') {
+        return categoryExercises.slice(0, hasBasicAccess ? 5 : 0); // Basic: 5, Premium/Elite: all
+      }
+    }
+    
+    return categoryExercises;
+  };
+
+  const getLockedExercisesCount = (category: string) => {
+    const totalExercises = exercises.filter(ex => ex.category === category).length;
+    const availableExercises = getExercisesByCategory(category).length;
+    return Math.max(0, totalExercises - availableExercises);
   };
 
   const getLevelColor = (level: string) => {
@@ -300,7 +324,20 @@ export const ExercisesPage: React.FC = () => {
                   </Card>
                 ))}
 
-                {getExercisesByCategory(category).length === 0 && (
+                {/* Show locked content message for restricted exercises */}
+                {getLockedExercisesCount(category) > 0 && (
+                  <SubscriptionContentGate
+                    requiredTier={
+                      category === 'Cardio' && !hasPremiumAccess_Level ? 'premium' :
+                      category === 'Força' && !hasEliteAccess ? 'elite' :
+                      category === 'Recomendados' && !hasEliteAccess ? 'elite' : 'basic'
+                    }
+                    title={`+${getLockedExercisesCount(category)} exercícios bloqueados`}
+                    description={`Faça upgrade para acessar todos os exercícios de ${category.toLowerCase()}.`}
+                  />
+                )}
+
+                {getExercisesByCategory(category).length === 0 && getLockedExercisesCount(category) === 0 && (
                   <Card className="border-gray-200">
                     <CardContent className="pt-6">
                       <div className="text-center text-gray-500">

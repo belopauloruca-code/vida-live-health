@@ -8,15 +8,17 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
   requirePremium?: boolean;
+  requireTier?: 'basic' | 'premium' | 'elite';
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requireAdmin = false, 
-  requirePremium = false 
+  requirePremium = false,
+  requireTier 
 }) => {
   const { user, loading, isAdmin } = useAuth();
-  const { hasPremiumAccess, isLoading: premiumLoading } = usePremiumAccess();
+  const { hasPremiumAccess, hasBasicAccess, hasPremiumAccess_Level, hasEliteAccess, isLoading: premiumLoading } = usePremiumAccess();
 
   if (loading || (requirePremium && premiumLoading)) {
     return (
@@ -36,6 +38,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (requirePremium && !hasPremiumAccess) {
     return <Navigate to="/subscription" replace />;
+  }
+
+  if (requireTier) {
+    let hasRequiredTier = false;
+    switch (requireTier) {
+      case 'basic':
+        hasRequiredTier = hasBasicAccess;
+        break;
+      case 'premium':
+        hasRequiredTier = hasPremiumAccess_Level;
+        break;
+      case 'elite':
+        hasRequiredTier = hasEliteAccess;
+        break;
+    }
+    
+    if (!hasRequiredTier) {
+      return <Navigate to="/subscription" replace />;
+    }
   }
 
   return <>{children}</>;
