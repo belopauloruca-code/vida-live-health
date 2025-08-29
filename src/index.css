@@ -100,6 +100,18 @@ Updated for Vida Live green theme (#16A34A / #22C55E) */
   }
 }
 
+/* Safe area utilities for mobile */
+@layer base {
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --bottom-nav-height: 82px;
+    --bottom-nav-safe: calc(var(--bottom-nav-height) + var(--safe-area-inset-bottom));
+  }
+}
+
 /* Custom utilities for Vida Live */
 @layer utilities {
   .text-vida-green {
@@ -120,5 +132,31 @@ Updated for Vida Live green theme (#16A34A / #22C55E) */
   
   .border-vida-green {
     border-color: hsl(142 76% 36%);
+  }
+
+  /* Safe area utilities */
+  .pt-safe {
+    padding-top: var(--safe-area-inset-top);
+  }
+  
+  .pb-safe {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+  
+  .pl-safe {
+    padding-left: var(--safe-area-inset-left);
+  }
+  
+  .pr-safe {
+    padding-right: var(--safe-area-inset-right);
+  }
+  
+  .pb-safe-bottom-nav {
+    padding-bottom: var(--bottom-nav-safe);
+  }
+  
+  .bottom-nav-safe {
+    height: var(--bottom-nav-safe);
+    padding-bottom: var(--safe-area-inset-bottom);
   }
 }

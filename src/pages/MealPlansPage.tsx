@@ -83,7 +83,7 @@ export const MealPlansPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-safe-bottom-nav">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">

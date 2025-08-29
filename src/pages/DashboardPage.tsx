@@ -100,7 +100,7 @@ export const DashboardPage: React.FC = () => {
   const cupsDrunk = Math.floor(hydrationToday / 250);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-safe-bottom-nav">
       {/* Hero Cover Section */}
       <div 
         className="relative h-48 bg-cover bg-center bg-no-repeat"
@@ -283,7 +283,7 @@ export const DashboardPage: React.FC = () => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {hasActiveSubscription ? (
             <Button 
               variant="outline" 
