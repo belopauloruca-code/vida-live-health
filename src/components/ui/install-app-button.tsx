@@ -76,7 +76,7 @@ export const InstallAppButton: React.FC<InstallAppButtonProps> = ({
         ) : (
           <>
             <Download className="h-4 w-4 mr-2" />
-            Instalar App
+            Baixar App Agora
           </>
         )}
       </Button>

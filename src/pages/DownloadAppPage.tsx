@@ -20,8 +20,8 @@ export const DownloadAppPage: React.FC = () => {
         {/* Header */}
         <div className="mb-6">
           <BrandHeader 
-            title="Instalar App"
-            subtitle="Tenha o Vida Live sempre com você"
+            title="Baixar App Vida Leve"
+            subtitle="Instale o app diretamente no seu dispositivo"
             className="justify-center text-center"
           />
         </div>
@@ -39,11 +39,16 @@ export const DownloadAppPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-6">
+              <div className="mb-6 space-y-3">
                 <InstallAppButton 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg py-6"
                   size="lg"
                 />
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">
+                    👆 Clique no botão acima para instalação direta
+                  </p>
+                </div>
               </div>
               
               <div className="space-y-4">
