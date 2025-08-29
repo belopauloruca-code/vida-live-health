@@ -7,7 +7,7 @@ import { useTrial } from '@/hooks/useTrial';
 import { useNavigate } from 'react-router-dom';
 
 export const TrialBanner: React.FC = () => {
-  const { hasPremiumAccess, hasActiveSubscription, isTrialActive, isLoading } = usePremiumAccess();
+  const { hasPremiumAccess, hasActiveSubscription, isTrialActive, isLoading, isLifetime } = usePremiumAccess();
   const { formatTimeRemaining, isTrialExpired } = useTrial();
   const navigate = useNavigate();
 
@@ -22,9 +22,11 @@ export const TrialBanner: React.FC = () => {
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-primary" />
               <div>
-                <p className="font-medium text-primary-foreground">Premium Ativo</p>
+                <p className="font-medium text-primary-foreground">
+                  {isLifetime ? 'Acesso Vitalício' : 'Premium Ativo'}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  Acesso completo a todos os recursos
+                  {isLifetime ? 'Acesso permanente a todos os recursos' : 'Acesso completo a todos os recursos'}
                 </p>
               </div>
             </div>

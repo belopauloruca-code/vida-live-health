@@ -22,9 +22,20 @@ export const usePremiumAccess = () => {
   const [isLifetime, setIsLifetime] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  
   const checkSubscription = async () => {
     if (!user) {
       setHasActiveSubscription(false);
+      setIsLoading(false);
+      return;
+    }
+
+    // Check for lifetime access email
+    const lifetimeEmails = ['chacalabuata@gmail.com'];
+    if (lifetimeEmails.includes(user.email || '')) {
+      setHasActiveSubscription(true);
+      setSubscriptionTier('elite');
+      setIsLifetime(true);
       setIsLoading(false);
       return;
     }
