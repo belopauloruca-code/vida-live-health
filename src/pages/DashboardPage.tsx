@@ -13,7 +13,9 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
-import { Droplets, Target, Calendar, Activity, Plus, LogOut, Lock } from 'lucide-react';
+import { Droplets, Target, Calendar, Activity, Plus, LogOut, Lock, Star } from 'lucide-react';
+import dashboardHeroBg from '@/assets/dashboard-hero-bg.jpg';
+import subscriptionCardBg from '@/assets/subscription-card-bg.jpg';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -105,7 +107,7 @@ export const DashboardPage: React.FC = () => {
       <div 
         className="relative h-48 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2)), url('/lovable-uploads/6adff54d-a871-4013-b61d-151fd65d71ca.png')`
+          backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${dashboardHeroBg})`
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center">
@@ -293,19 +295,27 @@ export const DashboardPage: React.FC = () => {
               {t('dashboard.quickActions.viewMealPlans')}
             </Button>
           ) : (
-            <Card className="h-16 flex items-center justify-center border-gray-200 bg-gray-50">
-              <CardContent className="flex items-center gap-2 p-0">
-                <Lock className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-gray-500">Ver Planos</span>
-                <Button 
-                  size="sm" 
-                  variant="default"
-                  onClick={() => navigate('/subscription')}
-                >
-                  Assinar
-                </Button>
-              </CardContent>
-            </Card>
+            <div 
+              className="relative h-16 bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
+              style={{
+                backgroundImage: `linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.8)), url(${subscriptionCardBg})`
+              }}
+              onClick={() => navigate('/subscription')}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex items-center gap-3 text-white">
+                  <Star className="h-5 w-5" />
+                  <span className="font-medium">Desbloquear Planos Premium</span>
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                  >
+                    Assinar
+                  </Button>
+                </div>
+              </div>
+            </div>
           )}
           <Button 
             variant="outline" 
