@@ -148,8 +148,38 @@ export const SubscriptionPlanPage: React.FC = () => {
       </div>;
   }
   const plans = [{
+    id: 'basic',
+    name: 'Básico',
+    price: '€6,99',
+    period: '/mês',
+    popular: false,
+    features: ['Plano alimentar personalizado', 'Receitas saudáveis', 'Acompanhamento de peso', 'Suporte por e-mail'],
+    stripeUrl: 'https://buy.stripe.com/3cI00kfoedRE3QugTB2sM0a',
+    icon: CheckCircle,
+    category: 'traditional'
+  }, {
+    id: 'premium',
+    name: 'Premium',
+    price: '€12,99',
+    period: '/mês',
+    popular: false,
+    features: ['Tudo do Básico', 'Exercícios personalizados', 'Planos semanais adaptados', 'Acompanhamento nutricional', 'Relatórios de progresso', 'Suporte prioritário'],
+    stripeUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09',
+    icon: Crown,
+    category: 'traditional'
+  }, {
+    id: 'elite',
+    name: 'Elite',
+    price: '€36,99',
+    period: '/anual',
+    popular: false,
+    features: ['Tudo do Premium', 'Consultoria nutricional individual', 'Planos adaptados a condições médicas', 'Videochamadas com nutricionistas', 'Lista de compras automática', 'Acesso antecipado a novidades'],
+    stripeUrl: 'https://buy.stripe.com/fZufZi6RI8xk72G32L2sM0b',
+    icon: Star,
+    category: 'traditional'
+  }, {
     id: 'monthly',
-    name: 'Mensal',
+    name: 'Vida Live Mensal',
     price: '€19,99',
     period: '/mês',
     popular: false,
@@ -157,10 +187,11 @@ export const SubscriptionPlanPage: React.FC = () => {
     savings: null,
     features: ['Planos de refeição personalizados', 'Biblioteca completa de exercícios', 'Acompanhamento de hidratação', 'Assistente IA Dr. de Ajuda', 'Relatórios de progresso', 'Suporte prioritário'],
     stripeUrl: 'https://buy.stripe.com/3cI00kfoedRE3QugTB2sM0a',
-    icon: Crown
+    icon: Crown,
+    category: 'featured'
   }, {
     id: 'yearly',
-    name: 'Anual',
+    name: 'Vida Live Anual',
     price: '€167,99',
     period: '/ano',
     popular: true,
@@ -168,7 +199,8 @@ export const SubscriptionPlanPage: React.FC = () => {
     savings: 'Economize €71,89',
     features: ['Tudo do plano mensal', 'Economize 30% no valor total', 'Pagamento único anual', 'Acesso garantido por 12 meses', 'Suporte prioritário premium', 'Atualizações gratuitas'],
     stripeUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09',
-    icon: Star
+    icon: Star,
+    category: 'featured'
   }];
   return <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
@@ -200,94 +232,156 @@ export const SubscriptionPlanPage: React.FC = () => {
             </CardHeader>
           </Card>}
 
-        {/* Pricing Toggle Section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center bg-muted rounded-lg p-1 mb-6">
-            <div className="px-4 py-2 rounded-md bg-background text-foreground font-medium shadow-sm">
-              Mensal vs Anual
+        {/* Featured Plans Section */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Planos Recomendados</h2>
+            <div className="inline-flex items-center bg-muted rounded-lg p-1 mb-6">
+              <div className="px-4 py-2 rounded-md bg-background text-foreground font-medium shadow-sm">
+                Mensal vs Anual
+              </div>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Escolha entre pagamento mensal ou anual com desconto
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Escolha entre pagamento mensal ou anual com desconto
-          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12">
+            {plans.filter(plan => plan.category === 'featured').map(plan => {
+            const Icon = plan.icon;
+            const isCurrentPlan = subscription && subscription.subscription_tier === plan.name;
+            const shouldDisableButton = isCurrentPlan || isLifetime && subscription?.subscription_tier === 'elite';
+            return <Card key={plan.id} className={`relative ${plan.popular ? 'border-primary shadow-lg scale-105' : 'border-border'} ${isCurrentPlan ? 'bg-primary/5' : ''}`}>
+                  {plan.popular && <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground px-4 py-1.5 text-sm font-semibold">
+                        🔥 MELHOR VALOR
+                      </Badge>
+                    </div>}
+                  
+                  <CardHeader className="text-center pb-6">
+                    <div className="flex justify-center mb-4">
+                      {plan.id === 'monthly' && <span className="text-3xl">💳</span>}
+                      {plan.id === 'yearly' && <span className="text-3xl">💎</span>}
+                    </div>
+                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                    
+                    {/* Main Price Display */}
+                    <div className="mt-4 mb-2">
+                      <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-lg text-muted-foreground ml-1">{plan.period}</span>
+                    </div>
+                    
+                    {/* Monthly Equivalent or Yearly Total */}
+                    {plan.monthlyEquivalent && (
+                      <div className="text-sm text-muted-foreground">
+                        Equivale a {plan.monthlyEquivalent}
+                      </div>
+                    )}
+                    {plan.yearlyEquivalent && (
+                      <div className="text-sm text-muted-foreground">
+                        Total anual: {plan.yearlyEquivalent}
+                      </div>
+                    )}
+                    
+                    {/* Savings Badge */}
+                    {plan.savings && (
+                      <div className="mt-3">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
+                          {plan.savings}
+                        </Badge>
+                      </div>
+                    )}
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-6">
+                    <ul className="space-y-3">
+                      {plan.features.map((feature, index) => <li key={index} className="flex items-start">
+                          <CheckCircle className="h-4 w-4 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-foreground leading-relaxed">{feature}</span>
+                        </li>)}
+                    </ul>
+                    
+                    <Button 
+                      className={`w-full py-6 text-lg font-semibold ${plan.popular ? 'bg-primary hover:bg-primary/90 shadow-lg' : ''}`} 
+                      variant={plan.popular ? 'default' : 'outline'} 
+                      onClick={() => handleSubscribe(plan.stripeUrl)} 
+                      disabled={shouldDisableButton}
+                    >
+                      {isCurrentPlan && isLifetime ? <>
+                          <Infinity className="h-5 w-5 mr-2" />
+                          Acesso Vitalício
+                        </> : isCurrentPlan ? <>
+                          <CheckCircle className="h-5 w-5 mr-2" />
+                          Plano Atual
+                        </> : <>
+                          <ExternalLink className="h-5 w-5 mr-2" />
+                          Assinar {plan.name}
+                        </>}
+                    </Button>
+                  </CardContent>
+                </Card>;
+          })}
+          </div>
         </div>
 
-        {/* Plans Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-4xl mx-auto">
-          {plans.map(plan => {
-          const Icon = plan.icon;
-          const isCurrentPlan = subscription && subscription.subscription_tier === plan.name;
-          const shouldDisableButton = isCurrentPlan || isLifetime && subscription?.subscription_tier === 'elite';
-          return <Card key={plan.id} className={`relative ${plan.popular ? 'border-primary shadow-lg scale-105' : 'border-border'} ${isCurrentPlan ? 'bg-primary/5' : ''}`}>
-                {plan.popular && <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-4 py-1.5 text-sm font-semibold">
-                      🔥 MELHOR VALOR
-                    </Badge>
-                  </div>}
-                
-                <CardHeader className="text-center pb-6">
-                  <div className="flex justify-center mb-4">
-                    {plan.id === 'monthly' && <span className="text-3xl">💳</span>}
-                    {plan.id === 'yearly' && <span className="text-3xl">💎</span>}
-                  </div>
-                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                  
-                  {/* Main Price Display */}
-                  <div className="mt-4 mb-2">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-lg text-muted-foreground ml-1">{plan.period}</span>
-                  </div>
-                  
-                  {/* Monthly Equivalent or Yearly Total */}
-                  {plan.monthlyEquivalent && (
-                    <div className="text-sm text-muted-foreground">
-                      Equivale a {plan.monthlyEquivalent}
-                    </div>
-                  )}
-                  {plan.yearlyEquivalent && (
-                    <div className="text-sm text-muted-foreground">
-                      Total anual: {plan.yearlyEquivalent}
-                    </div>
-                  )}
-                  
-                  {/* Savings Badge */}
-                  {plan.savings && (
-                    <div className="mt-3">
-                      <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
-                        {plan.savings}
+        {/* Traditional Plans Section */}
+        <div className="mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Outros Planos Disponíveis</h2>
+            <p className="text-sm text-muted-foreground">
+              Opções tradicionais com diferentes níveis de funcionalidades
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.filter(plan => plan.category === 'traditional').map(plan => {
+            const Icon = plan.icon;
+            const isCurrentPlan = subscription && subscription.subscription_tier === plan.name;
+            const shouldDisableButton = isCurrentPlan || isLifetime && subscription?.subscription_tier === 'elite';
+            return <Card key={plan.id} className={`relative ${plan.popular ? 'border-primary shadow-lg' : 'border-border'} ${isCurrentPlan ? 'bg-primary/5' : ''}`}>
+                  {plan.popular && <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                        Mais Popular
                       </Badge>
-                    </div>
-                  )}
-                </CardHeader>
-                
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, index) => <li key={index} className="flex items-start">
-                        <CheckCircle className="h-4 w-4 text-primary mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-foreground leading-relaxed">{feature}</span>
-                      </li>)}
-                  </ul>
+                    </div>}
                   
-                  <Button 
-                    className={`w-full py-6 text-lg font-semibold ${plan.popular ? 'bg-primary hover:bg-primary/90 shadow-lg' : ''}`} 
-                    variant={plan.popular ? 'default' : 'outline'} 
-                    onClick={() => handleSubscribe(plan.stripeUrl)} 
-                    disabled={shouldDisableButton}
-                  >
-                    {isCurrentPlan && isLifetime ? <>
-                        <Infinity className="h-5 w-5 mr-2" />
-                        Acesso Vitalício
-                      </> : isCurrentPlan ? <>
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Plano Atual
-                      </> : <>
-                        <ExternalLink className="h-5 w-5 mr-2" />
-                        Assinar {plan.name}
-                      </>}
-                  </Button>
-                </CardContent>
-              </Card>;
-        })}
+                  <CardHeader className="text-center pb-4">
+                    <div className="flex justify-center mb-3">
+                      {plan.id === 'basic' && <span className="text-2xl">✨</span>}
+                      {plan.id === 'premium' && <span className="text-2xl">👑</span>}
+                      {plan.id === 'elite' && <span className="text-2xl">⚡</span>}
+                    </div>
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <div className="mt-2">
+                      <span className="text-3xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-muted-foreground">{plan.period}</span>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <ul className="space-y-2">
+                      {plan.features.map((feature, index) => <li key={index} className="flex items-start">
+                          <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm text-foreground">{feature}</span>
+                        </li>)}
+                    </ul>
+                    
+                    <Button className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`} variant={plan.popular ? 'default' : 'outline'} onClick={() => handleSubscribe(plan.stripeUrl)} disabled={shouldDisableButton}>
+                      {isCurrentPlan && isLifetime ? <>
+                          <Infinity className="h-4 w-4 mr-2" />
+                          Acesso Vitalício
+                        </> : isCurrentPlan ? <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Plano Atual
+                        </> : <>
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Assinar {plan.name}
+                        </>}
+                    </Button>
+                  </CardContent>
+                </Card>;
+          })}
+          </div>
         </div>
 
         {/* Refresh Button */}
