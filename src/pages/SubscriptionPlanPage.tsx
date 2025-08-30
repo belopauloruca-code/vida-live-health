@@ -204,10 +204,7 @@ export const SubscriptionPlanPage: React.FC = () => {
   }];
   return <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Planos de Assinatura</h1>
-          <p className="text-muted-foreground">Escolha o plano ideal para seus objetivos de saúde</p>
-        </div>
+        
 
         {/* Current Subscription Status */}
         {subscription && <Card className="border-primary/20 bg-primary/5 mb-6">
@@ -272,25 +269,19 @@ export const SubscriptionPlanPage: React.FC = () => {
                     </div>
                     
                     {/* Monthly Equivalent or Yearly Total */}
-                    {plan.monthlyEquivalent && (
-                      <div className="text-sm text-muted-foreground">
+                    {plan.monthlyEquivalent && <div className="text-sm text-muted-foreground">
                         Equivale a {plan.monthlyEquivalent}
-                      </div>
-                    )}
-                    {plan.yearlyEquivalent && (
-                      <div className="text-sm text-muted-foreground">
+                      </div>}
+                    {plan.yearlyEquivalent && <div className="text-sm text-muted-foreground">
                         Total anual: {plan.yearlyEquivalent}
-                      </div>
-                    )}
+                      </div>}
                     
                     {/* Savings Badge */}
-                    {plan.savings && (
-                      <div className="mt-3">
+                    {plan.savings && <div className="mt-3">
                         <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
                           {plan.savings}
                         </Badge>
-                      </div>
-                    )}
+                      </div>}
                   </CardHeader>
                   
                   <CardContent className="space-y-6">
@@ -301,12 +292,7 @@ export const SubscriptionPlanPage: React.FC = () => {
                         </li>)}
                     </ul>
                     
-                    <Button 
-                      className={`w-full py-6 text-lg font-semibold ${plan.popular ? 'bg-primary hover:bg-primary/90 shadow-lg' : ''}`} 
-                      variant={plan.popular ? 'default' : 'outline'} 
-                      onClick={() => handleSubscribe(plan.stripeUrl)} 
-                      disabled={shouldDisableButton}
-                    >
+                    <Button className={`w-full py-6 text-lg font-semibold ${plan.popular ? 'bg-primary hover:bg-primary/90 shadow-lg' : ''}`} variant={plan.popular ? 'default' : 'outline'} onClick={() => handleSubscribe(plan.stripeUrl)} disabled={shouldDisableButton}>
                       {isCurrentPlan && isLifetime ? <>
                           <Infinity className="h-5 w-5 mr-2" />
                           Acesso Vitalício
