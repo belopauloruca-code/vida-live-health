@@ -58,7 +58,10 @@ export const PaymentPage: React.FC = () => {
               Acesso completo a todas as funcionalidades
             </CardDescription>
             <div className="text-4xl font-bold text-green-500 mt-4">
-              €5<span className="text-lg text-gray-500">/mês</span>
+              €19,99<span className="text-lg text-gray-500">/mês</span>
+            </div>
+            <div className="text-sm text-gray-600 mt-2">
+              ou €167,99/ano (economize €71,89)
             </div>
           </CardHeader>
           
@@ -79,7 +82,7 @@ export const PaymentPage: React.FC = () => {
                 onClick={handleSubscribe}
               >
                 <CreditCard className="h-5 w-5 mr-2" />
-                Assinar Agora - €5/mês
+                Assinar Agora - €19,99/mês
               </Button>
               
               <Button 
