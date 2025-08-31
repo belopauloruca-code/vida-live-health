@@ -603,6 +603,14 @@ export type Database = {
       }
     }
     Functions: {
+      get_admin_revenue_data: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          month: string
+          total_revenue: number
+          transaction_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
