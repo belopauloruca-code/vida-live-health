@@ -89,7 +89,16 @@ export const MealPlansPage: React.FC = () => {
   };
 
   const getMealsForDay = (dayIndex: number) => {
-    return planItems.filter(item => item.day_index === dayIndex);
+    const mealsForDay = planItems.filter(item => item.day_index === dayIndex);
+    
+    // Ordenar as refeições na ordem correta do dia
+    const mealOrder = ['Café', 'Lanche', 'Almoço', 'Jantar'];
+    
+    return mealsForDay.sort((a, b) => {
+      const orderA = mealOrder.indexOf(a.meal_type);
+      const orderB = mealOrder.indexOf(b.meal_type);
+      return orderA - orderB;
+    });
   };
 
   const handleGeneratePlan = () => {
