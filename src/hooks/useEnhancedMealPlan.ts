@@ -294,12 +294,22 @@ export const useEnhancedMealPlan = () => {
       for (let day = 0; day < 7; day++) {
         for (const mealType of mealTypes) {
           // Get recipes for this meal type within calorie range
-          const { data: availableRecipes } = await supabase
+          let { data: availableRecipes } = await supabase
             .from('recipes')
             .select('*')
             .eq('meal_type', normalizeMealType(mealType))
             .gte('kcal', targetKcalPerMeal - tolerance)
             .lte('kcal', targetKcalPerMeal + tolerance);
+
+          // Se não encontrou receitas dentro da faixa de calorias, buscar qualquer receita do tipo
+          if (!availableRecipes || availableRecipes.length === 0) {
+            const { data: fallbackRecipes } = await supabase
+              .from('recipes')
+              .select('*')
+              .eq('meal_type', normalizeMealType(mealType));
+            
+            availableRecipes = fallbackRecipes;
+          }
 
           if (availableRecipes && availableRecipes.length > 0) {
             // Pick a random recipe
@@ -311,6 +321,8 @@ export const useEnhancedMealPlan = () => {
               meal_type: mealType,
               recipe_id: randomRecipe.id
             });
+          } else {
+            console.warn(`No recipes found for meal type: ${mealType}`);
           }
         }
       }
