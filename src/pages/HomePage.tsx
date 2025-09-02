@@ -50,11 +50,8 @@ export const HomePage: React.FC = () => {
       <div className="container mx-auto px-4 py-16">
         {/* Hero Banner */}
         <div className="mb-16 rounded-2xl overflow-hidden shadow-xl">
-          <img 
-            src="/images/hero-clean.jpg" 
-            alt={t('home.title')}
-            className="w-full h-56 sm:h-72 md:h-96 object-cover"
-            loading="lazy"
+          <div 
+            className="w-full h-56 sm:h-72 md:h-96 bg-[#4CAF50]"
           />
         </div>
         
