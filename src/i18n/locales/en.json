@@ -98,5 +98,25 @@
     "pt": "Português (PT)",
     "pt-BR": "Português (BR)",
     "en": "English"
+  },
+  "aiAssistant": {
+    "title": "Dr. Help",
+    "subtitle": "Your caring health and wellness assistant",
+    "welcome": "Hello! I'm Dr. Help, your caring assistant for a healthier life. How can I help you today? 💚",
+    "howCanIHelp": "💬 How can I help you today?",
+    "suggestionDescription": "Click on one of the suggestions below or type your own question",
+    "placeholder": "Write a message",
+    "suggestions": {
+      "weightLoss": "How to lose weight healthily?",
+      "nightFood": "What can I eat at night?",
+      "exercise": "How many times a week should I train?",
+      "motivation": "How to maintain motivation for weight loss?",
+      "water": "How can I increase my water intake?",
+      "snacks": "What are the best healthy snacks?"
+    },
+    "disclaimer": {
+      "title": "Notice",
+      "content": "Dr. Help offers general health and wellness tips. For specific medical guidance, always consult a healthcare professional."
+    }
   }
 }

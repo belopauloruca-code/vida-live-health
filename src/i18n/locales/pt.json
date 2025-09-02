@@ -98,5 +98,25 @@
     "pt": "Português (PT)",
     "pt-BR": "Português (BR)",
     "en": "English"
+  },
+  "aiAssistant": {
+    "title": "Dr. Ajuda",
+    "subtitle": "O seu assistente carinhoso de saúde e bem-estar",
+    "welcome": "Olá! Eu sou o Dr. Ajuda, o seu assistente carinhoso para uma vida mais saudável. Como posso ajudá-lo hoje? 💚",
+    "howCanIHelp": "💬 Como posso ajudá-lo hoje?",
+    "suggestionDescription": "Clique numa das sugestões abaixo ou escreva a sua própria pergunta",
+    "placeholder": "Escrever uma mensagem",
+    "suggestions": {
+      "weightLoss": "Como perder peso de forma saudável?",
+      "nightFood": "O que posso comer à noite?",
+      "exercise": "Quantas vezes por semana devo treinar?",
+      "motivation": "Como manter a motivação no emagrecimento?",
+      "water": "Como posso aumentar o meu consumo de água?",
+      "snacks": "Quais são os melhores lanches saudáveis?"
+    },
+    "disclaimer": {
+      "title": "Aviso",
+      "content": "Dr. Ajuda oferece dicas gerais de saúde e bem-estar. Para orientações médicas específicas, consulte sempre um profissional de saúde."
+    }
   }
 }

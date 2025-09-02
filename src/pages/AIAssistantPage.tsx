@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,16 +37,17 @@ export const AIAssistantPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const quickSuggestions = [
-    "Como perder peso de forma saudável?",
-    "O que posso comer à noite?",
-    "Quantas vezes por semana devo treinar?",
-    "Como manter a motivação no emagrecimento?",
-    "Como posso aumentar meu consumo de água?",
-    "Quais são os melhores lanches saudáveis?"
+    t('aiAssistant.suggestions.weightLoss'),
+    t('aiAssistant.suggestions.nightFood'),
+    t('aiAssistant.suggestions.exercise'),
+    t('aiAssistant.suggestions.motivation'),
+    t('aiAssistant.suggestions.water'),
+    t('aiAssistant.suggestions.snacks')
   ];
 
   // Load chat history on component mount
@@ -80,7 +82,7 @@ export const AIAssistantPage: React.FC = () => {
       if (historyMessages.length === 0) {
         const welcomeMessage: Message = {
           id: 'welcome',
-          content: "Olá! Eu sou o Dr. Ajuda, seu assistente carinhoso para uma vida mais saudável. Como posso te ajudar hoje? 💚",
+          content: t('aiAssistant.welcome'),
           isBot: true,
           timestamp: new Date()
         };
@@ -93,7 +95,7 @@ export const AIAssistantPage: React.FC = () => {
       // Show welcome message on error
       const welcomeMessage: Message = {
         id: 'welcome',
-        content: "Olá! Eu sou o Dr. Ajuda, seu assistente carinhoso para uma vida mais saudável. Como posso te ajudar hoje? 💚",
+        content: t('aiAssistant.welcome'),
         isBot: true,
         timestamp: new Date()
       };
@@ -234,7 +236,7 @@ export const AIAssistantPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-32 sm:pb-20">
       <div className="container mx-auto p-4 max-w-4xl">
         {/* Header */}
         <Card className="mb-6">
@@ -246,15 +248,15 @@ export const AIAssistantPage: React.FC = () => {
                   DA
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Dr. Ajuda
-                </CardTitle>
-              </div>
+            <div>
+              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                {t('aiAssistant.title')}
+              </CardTitle>
             </div>
-            <p className="text-muted-foreground">
-              Seu assistente carinhoso de saúde e bem-estar
-            </p>
+          </div>
+          <p className="text-muted-foreground">
+            {t('aiAssistant.subtitle')}
+          </p>
           </CardHeader>
         </Card>
 
@@ -264,10 +266,10 @@ export const AIAssistantPage: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-lg">
                 <Sparkles className="h-5 w-5 mr-2 text-primary" />
-                💬 Como posso te ajudar hoje?
+                {t('aiAssistant.howCanIHelp')}
               </CardTitle>
               <CardDescription>
-                Clique em uma das sugestões abaixo ou digite sua própria pergunta
+                {t('aiAssistant.suggestionDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -341,49 +343,52 @@ export const AIAssistantPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* WhatsApp-style Input */}
-        <div className="flex items-end gap-3 p-4">
-          <div className="flex items-center gap-2 flex-1 bg-muted rounded-full px-4 py-2">
-            <Smile className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-            <Textarea
-              ref={textareaRef}
-              value={inputMessage}
-              onChange={(e) => {
-                setInputMessage(e.target.value);
-                handleTextareaInput();
-              }}
-              onInput={handleTextareaInput}
-              placeholder="Escrever uma mensagem"
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-              rows={1}
-              className="flex-1 bg-transparent border-0 focus:ring-0 resize-none min-h-[40px] max-h-40 py-2 px-0"
-            />
-            <Paperclip className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+        {/* WhatsApp-style Input - Fixed for mobile */}
+        <div className="fixed bottom-16 left-0 right-0 bg-background border-t border-border p-3 sm:relative sm:bottom-auto sm:border-t-0 sm:p-4">
+          <div className="container mx-auto max-w-4xl">
+            <div className="flex items-end gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 flex-1 bg-muted rounded-full px-3 sm:px-4 py-2">
+                <Smile className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                <Textarea
+                  ref={textareaRef}
+                  value={inputMessage}
+                  onChange={(e) => {
+                    setInputMessage(e.target.value);
+                    handleTextareaInput();
+                  }}
+                  onInput={handleTextareaInput}
+                  placeholder={t('aiAssistant.placeholder')}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading}
+                  rows={1}
+                  className="flex-1 bg-transparent border-0 focus:ring-0 resize-none min-h-[36px] sm:min-h-[40px] max-h-32 sm:max-h-40 py-2 px-0 text-sm sm:text-base"
+                />
+                <Paperclip className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+              </div>
+              {inputMessage.trim() ? (
+                <Button 
+                  onClick={sendMessage} 
+                  disabled={loading}
+                  className="rounded-full h-10 w-10 sm:h-12 sm:w-12 p-0 flex-shrink-0"
+                >
+                  <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+                </Button>
+              ) : (
+                <button 
+                  type="button" 
+                  className="rounded-full h-10 w-10 sm:h-12 sm:w-12 grid place-items-center bg-primary text-primary-foreground/90 hover:bg-primary/90 transition-colors flex-shrink-0"
+                >
+                  <Mic className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+              )}
+            </div>
           </div>
-          {inputMessage.trim() ? (
-            <Button 
-              onClick={sendMessage} 
-              disabled={loading}
-              className="rounded-full h-12 w-12 p-0"
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          ) : (
-            <button 
-              type="button" 
-              className="rounded-full h-12 w-12 grid place-items-center bg-primary text-primary-foreground/90 hover:bg-primary/90 transition-colors"
-            >
-              <Mic className="h-5 w-5" />
-            </button>
-          )}
         </div>
 
         {/* Disclaimer */}
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+        <div className="mt-6 mb-20 sm:mb-6 p-4 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground text-center">
-            <strong>💡 Aviso:</strong> Dr. Ajuda oferece dicas gerais de saúde e bem-estar. 
-            Para orientações médicas específicas, sempre consulte um profissional de saúde.
+            <strong>💡 {t('aiAssistant.disclaimer.title')}:</strong> {t('aiAssistant.disclaimer.content')}
           </p>
         </div>
       </div>
