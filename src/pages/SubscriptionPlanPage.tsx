@@ -157,7 +157,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Suporte por e-mail'
       ],
       stripeMonthlyUrl: 'https://buy.stripe.com/3cI00kfoedRE3QugTB2sM0a',
-      stripeYearlyUrl: 'https://buy.stripe.com/3cI00kfoedRE3QugTB2sM0a',
+      stripeYearlyUrl: 'https://buy.stripe.com/14A00k0tk7tg0Ei46P2sM0e',
       icon: '✨'
     },
     {
@@ -175,7 +175,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Suporte prioritário'
       ],
       stripeMonthlyUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09',
-      stripeYearlyUrl: 'https://buy.stripe.com/eVq14ob7YfZM0EieLt2sM09',
+      stripeYearlyUrl: 'https://buy.stripe.com/14AeVe0tk3d00Ei8n52sM0c',
       icon: '👑'
     },
     {
@@ -193,7 +193,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Acesso antecipado a novidades'
       ],
       stripeMonthlyUrl: 'https://buy.stripe.com/fZufZi6RI8xk72G32L2sM0b',
-      stripeYearlyUrl: 'https://buy.stripe.com/fZufZi6RI8xk72G32L2sM0b',
+      stripeYearlyUrl: 'https://buy.stripe.com/7sYcN65NE00O2Mqbzh2sM0f',
       icon: '⚡'
     }
   ];
