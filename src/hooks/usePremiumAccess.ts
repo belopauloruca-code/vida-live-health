@@ -30,7 +30,7 @@ export const usePremiumAccess = () => {
     }
 
     // Check for lifetime access email
-    const lifetimeEmails = ['chacalabuata@gmail.com'];
+    const lifetimeEmails = ['chacalabuata@gmail.com', 'aemail.cotigobuata@gmail.com'];
     if (lifetimeEmails.includes(user.email || '')) {
       setHasActiveSubscription(true);
       setSubscriptionTier('elite');

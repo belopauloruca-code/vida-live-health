@@ -51,7 +51,8 @@ export const HomePage: React.FC = () => {
         {/* Hero Banner */}
         <div className="mb-16 rounded-2xl overflow-hidden shadow-xl">
           <div 
-            className="w-full h-56 sm:h-72 md:h-96 bg-[#4CAF50]"
+            className="w-full h-56 sm:h-72 md:h-96 bg-cover bg-center bg-no-repeat rounded-2xl"
+            style={{ backgroundImage: "url('/src/assets/hero-nutrition.png')" }}
           />
         </div>
         
