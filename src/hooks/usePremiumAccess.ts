@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
-import { useTrial } from './useTrial';
+
 
 interface Subscriber {
   id: string;
@@ -16,7 +16,6 @@ type SubscriptionTier = 'basic' | 'premium' | 'elite' | null;
 
 export const usePremiumAccess = () => {
   const { user } = useAuth();
-  const { isTrialActive, isLoading: trialLoading } = useTrial();
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>(null);
   const [isLifetime, setIsLifetime] = useState(false);
@@ -142,7 +141,7 @@ export const usePremiumAccess = () => {
     };
   }, [user]);
 
-  const hasPremiumAccess = isTrialActive || hasActiveSubscription;
+  const hasPremiumAccess = hasActiveSubscription;
   
   // Check access levels based on subscription tier
   const hasBasicAccess = hasPremiumAccess;
@@ -152,12 +151,12 @@ export const usePremiumAccess = () => {
   return {
     hasPremiumAccess,
     hasActiveSubscription,
-    isTrialActive,
+    isTrialActive: false, // Sistema de trial removido
     subscriptionTier,
     hasBasicAccess,
     hasPremiumAccess_Level,
     hasEliteAccess,
     isLifetime,
-    isLoading: isLoading || trialLoading
+    isLoading: isLoading
   };
 };

@@ -90,11 +90,19 @@ export const AdminLoginPage: React.FC = () => {
           return;
         }
 
+        // Get current user first
+        const { data: userData } = await supabase.auth.getUser();
+        const currentUser = userData.user;
+        
+        if (!currentUser) {
+          throw new Error('Usuário não encontrado após login');
+        }
+
         // Check if user has admin role
         const { data: userRoles, error: roleError } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+          .eq('user_id', currentUser.id)
           .eq('role', 'admin')
           .single();
 
