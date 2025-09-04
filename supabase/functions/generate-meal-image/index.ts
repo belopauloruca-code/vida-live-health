@@ -45,17 +45,21 @@ serve(async (req) => {
     })
 
     const result = await response.json()
+    console.log('Runware API response:', JSON.stringify(result, null, 2))
     
-    if (result.data && result.data.length > 1) {
+    if (result.data && result.data.length > 0) {
       const imageData = result.data.find((item: any) => item.taskType === 'imageInference')
       
       if (imageData && imageData.imageURL) {
+        console.log('Image generated successfully:', imageData.imageURL)
         return new Response(
           JSON.stringify({ imageUrl: imageData.imageURL }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
     }
+    
+    console.error('No image data found in response:', result)
 
     return new Response(
       JSON.stringify({ error: 'Failed to generate image' }),

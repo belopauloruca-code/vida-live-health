@@ -16,6 +16,7 @@ import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { Droplets, Target, Calendar, Activity, Plus, LogOut, Lock, Star } from 'lucide-react';
 import dashboardHeroBg from '@/assets/dashboard-hero-bg.jpg';
 import subscriptionCardBg from '@/assets/subscription-card-bg.jpg';
+import healthyBowl from '@/assets/healthy-bowl.png';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -209,15 +210,24 @@ export const DashboardPage: React.FC = () => {
         }}
       >
         <div className="absolute inset-0 flex items-center justify-center px-4">
-          <div className="text-center text-white">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{t('dashboard.banner.title')}</h1>
-            <p className="text-base sm:text-lg opacity-90">{t('dashboard.banner.subtitle')}</p>
-            <Button 
-              className="mt-4 bg-white text-green-600 hover:bg-gray-100" 
-              onClick={() => navigate('/subscription')}
-            >
-              {t('dashboard.banner.cta')}
-            </Button>
+          <div className="flex items-center gap-6 max-w-4xl">
+            <div className="text-center text-white flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{t('dashboard.banner.title')}</h1>
+              <p className="text-base sm:text-lg opacity-90">{t('dashboard.banner.subtitle')}</p>
+              <Button 
+                className="mt-4 bg-white text-green-600 hover:bg-gray-100" 
+                onClick={() => navigate('/subscription')}
+              >
+                {t('dashboard.banner.cta')}
+              </Button>
+            </div>
+            <div className="hidden md:block flex-shrink-0">
+              <img 
+                src={healthyBowl} 
+                alt="Healthy Food Bowl" 
+                className="w-48 h-32 object-cover rounded-lg shadow-lg"
+              />
+            </div>
           </div>
         </div>
       </div>

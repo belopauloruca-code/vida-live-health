@@ -63,8 +63,8 @@ export const RecipeDialog: React.FC<RecipeDialogProps> = ({ recipe, isOpen, onCl
           description: "A imagem da receita foi gerada com sucesso.",
         });
         
-        // Force a page refresh to show the new image
-        window.location.reload();
+        // Update the local recipe state with the new image URL
+        recipe.image_url = data.imageUrl;
       }
     } catch (error) {
       console.error('Error generating image:', error);
