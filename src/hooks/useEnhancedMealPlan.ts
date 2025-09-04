@@ -12,6 +12,7 @@ interface Recipe {
   duration_min: number;
   ingredients: string;
   instructions: string;
+  image_url?: string;
 }
 
 interface MealPlan {
@@ -343,10 +344,85 @@ export const useEnhancedMealPlan = () => {
       setCurrentPlan(newPlan);
       await loadPlanItems(newPlan.id);
       
+      // Generate images for recipes without images in the background
+      generateImagesForPlan(newPlan.id);
+      
     } catch (error) {
       console.error('Error generating weekly meal plan:', error);
     } finally {
       setGenerating(false);
+    }
+  };
+
+  // Generate images for recipes without images
+  const generateImagesForPlan = async (planId: string) => {
+    try {
+      // Get all recipes used in this plan that don't have images
+      const { data: planItemsWithRecipes, error } = await supabase
+        .from('meal_plan_items')
+        .select(`
+          *,
+          recipe:recipes(*)
+        `)
+        .eq('meal_plan_id', planId);
+
+      if (error) {
+        console.error('Error loading plan items for image generation:', error);
+        return;
+      }
+
+      const recipesWithoutImages = planItemsWithRecipes
+        ?.filter(item => item.recipe && !item.recipe.image_url)
+        .map(item => item.recipe)
+        .filter((recipe, index, self) => 
+          // Remove duplicates by id
+          self.findIndex(r => r.id === recipe.id) === index
+        ) || [];
+
+      console.log(`Found ${recipesWithoutImages.length} recipes without images`);
+
+      // Generate images for each recipe without blocking
+      for (const recipe of recipesWithoutImages) {
+        try {
+          console.log(`Generating image for: ${recipe.title}`);
+          
+          const { data, error } = await supabase.functions.invoke('generate-meal-image', {
+            body: {
+              recipeName: recipe.title,
+              ingredients: recipe.ingredients,
+              recipeId: recipe.id
+            }
+          });
+
+          if (error) {
+            console.error(`Error generating image for ${recipe.title}:`, error);
+          } else if (data && data.success) {
+            console.log(`Image generated successfully for ${recipe.title}: ${data.imageUrl}`);
+            
+            // Update local state to reflect the new image
+            setRecipes(prev => prev.map(r => 
+              r.id === recipe.id ? { ...r, image_url: data.imageUrl } : r
+            ));
+            
+            // Refresh plan items to show updated recipes
+            loadPlanItems(planId);
+          }
+        } catch (error) {
+          console.error(`Error generating image for ${recipe.title}:`, error);
+        }
+        
+        // Add a small delay between requests to avoid overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      if (recipesWithoutImages.length > 0) {
+        toast({
+          title: "Imagens das receitas",
+          description: `Gerando imagens para ${recipesWithoutImages.length} receitas...`,
+        });
+      }
+    } catch (error) {
+      console.error('Error in generateImagesForPlan:', error);
     }
   };
 

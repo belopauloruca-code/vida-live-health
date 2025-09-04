@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.ai-exercise-demo]
 verify_jwt = true
+
+[functions.generate-meal-image]
+verify_jwt = false

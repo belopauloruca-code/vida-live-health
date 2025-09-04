@@ -208,19 +208,34 @@ export const MealPlansPage: React.FC = () => {
                 <div className="space-y-4">
                   {getMealsForDay(dayIndex).length > 0 ? (
                     getMealsForDay(dayIndex).map((mealItem, index) => (
-                      <Card key={index} className="border-gray-200">
+                        <Card key={index} className="border-gray-200 overflow-hidden">
+                        {/* Recipe Image */}
+                        {mealItem.recipe?.image_url && (
+                          <div className="w-full h-32 relative">
+                            <img 
+                              src={mealItem.recipe.image_url} 
+                              alt={mealItem.recipe.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              {getMealIcon(mealItem.meal_type)}
+                              {mealItem.meal_type}
+                            </div>
+                          </div>
+                        )}
+                        
                         <CardHeader className="pb-3">
                           <div className="flex justify-between items-start">
-                            <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex-1">
                               <CardTitle className="text-lg">{mealItem.recipe?.title || 'Receita não encontrada'}</CardTitle>
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              {getMealIcon(mealItem.meal_type)}
-                              <CardDescription className="text-sm font-medium">
-                                {mealItem.meal_type}
-                              </CardDescription>
-                            </div>
+                              {!mealItem.recipe?.image_url && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  {getMealIcon(mealItem.meal_type)}
+                                  <CardDescription className="text-sm font-medium">
+                                    {mealItem.meal_type}
+                                  </CardDescription>
+                                </div>
+                              )}
                             </div>
                             {mealItem.recipe && (
                               <div className="text-right">

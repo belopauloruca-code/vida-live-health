@@ -43,7 +43,8 @@ export const RecipeDialog: React.FC<RecipeDialogProps> = ({ recipe, isOpen, onCl
       const { data, error } = await supabase.functions.invoke('generate-meal-image', {
         body: { 
           recipeName: recipe.title,
-          ingredients: recipe.ingredients 
+          ingredients: recipe.ingredients,
+          recipeId: recipe.id
         }
       });
       
@@ -96,10 +97,17 @@ export const RecipeDialog: React.FC<RecipeDialogProps> = ({ recipe, isOpen, onCl
                 src={recipe.image_url} 
                 alt={recipe.title}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Error loading recipe image:', recipe.image_url);
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
           ) : (
-            <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex flex-col items-center justify-center">
+              <div className="text-gray-400 mb-2">
+                <Image className="h-8 w-8" />
+              </div>
               <Button
                 onClick={generateRecipeImage}
                 disabled={generatingImage}
