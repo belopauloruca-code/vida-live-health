@@ -50,6 +50,26 @@ export const HomePage: React.FC = () => {
               {t('home.register')}
             </Button>
           </div>
+          
+          {/* Subscription and Download App Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+            <Button 
+              size="lg" 
+              className="px-8 py-3 text-lg bg-primary hover:bg-primary/90"
+              onClick={() => navigate('/subscription')}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Assinar Plano
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-primary text-primary hover:bg-primary/10 px-8 py-3 text-lg"
+              onClick={() => navigate('/download-app')}
+            >
+              Baixar App
+            </Button>
+          </div>
         </div>
       </div>
     );
