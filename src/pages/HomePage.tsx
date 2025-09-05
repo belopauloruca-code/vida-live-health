@@ -5,11 +5,60 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity, Droplets, Utensils, Target, Heart, Timer, ExternalLink } from 'lucide-react';
-import heroImage from '/images/hero-vida-leve.jpg';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import heroImage from '@/assets/healthy-bowl-hero.png';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { hasPremiumAccess } = usePremiumAccess();
+
+  // Redirect non-premium users to subscription page
+  React.useEffect(() => {
+    if (user && !hasPremiumAccess) {
+      navigate('/subscription');
+    }
+  }, [user, hasPremiumAccess, navigate]);
+
+  // If user is not logged in, show login prompt
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
+        <div className="text-center px-4">
+          <h1 className="text-4xl font-bold text-gray-900 mb-6">
+            <span className="text-green-500">{t('home.title')}</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            {t('home.subtitle')}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              className="px-8 py-3 text-lg"
+              onClick={() => navigate('/login')}
+            >
+              {t('home.login')}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-green-500 text-green-500 hover:bg-green-50 px-8 py-3 text-lg"
+              onClick={() => navigate('/register')}
+            >
+              {t('home.register')}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If user doesn't have premium access, redirect to subscription
+  if (!hasPremiumAccess) {
+    return null; // Will redirect via useEffect
+  }
 
   const benefits = [
     {
@@ -51,8 +100,8 @@ export const HomePage: React.FC = () => {
         {/* Hero Banner */}
         <div className="mb-16 rounded-2xl overflow-hidden shadow-xl">
           <img 
-            src="/lovable-uploads/d49cc7e9-bbee-4091-bf10-83af1367e109.png"
-            alt="Mulher jovem na cozinha com frutas e verduras, promovendo vida saudável"
+            src={heroImage}
+            alt="Tigela saudável com frutas e ingredientes nutritivos"
             className="w-full h-56 sm:h-72 md:h-96 object-cover"
           />
         </div>
