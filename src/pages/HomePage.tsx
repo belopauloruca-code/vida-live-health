@@ -120,8 +120,8 @@ export const HomePage: React.FC = () => {
         {/* Hero Banner */}
         <div className="mb-16 rounded-2xl overflow-hidden shadow-xl">
           <img 
-            src={heroImage}
-            alt="Tigela saudável com frutas e ingredientes nutritivos"
+            src="/lovable-uploads/add20dd8-7ad4-4129-a23c-27af3d1946ac.png"
+            alt="Tigela saudável com vegetais, cogumelos e ingredientes nutritivos"
             className="w-full h-56 sm:h-72 md:h-96 object-cover"
           />
         </div>
