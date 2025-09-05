@@ -6,7 +6,7 @@ import { AuthProvider } from '@/components/auth/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { PWAUpdater } from '@/components/PWAUpdater';
 import { SplashScreen } from '@/components/ui/splash-screen';
-import { HomePage } from '@/pages/HomePage';
+import Index from '@/pages/Index';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 
@@ -36,7 +36,7 @@ function App() {
           <div className="min-h-screen bg-background">
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<Index />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/payment" element={<PaymentPage />} />
