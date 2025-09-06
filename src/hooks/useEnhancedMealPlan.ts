@@ -381,6 +381,14 @@ export const useEnhancedMealPlan = () => {
 
       console.log(`Found ${recipesWithoutImages.length} recipes without images`);
 
+      if (recipesWithoutImages.length === 0) {
+        console.log('All recipes already have images');
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
       // Generate images for each recipe without blocking
       for (const recipe of recipesWithoutImages) {
         try {
@@ -396,8 +404,10 @@ export const useEnhancedMealPlan = () => {
 
           if (error) {
             console.error(`Error generating image for ${recipe.title}:`, error);
-          } else if (data && data.success) {
-            console.log(`Image generated successfully for ${recipe.title}: ${data.imageUrl}`);
+            failCount++;
+          } else if (data && data.success && data.imageUrl) {
+            console.log(`Image generated successfully for ${recipe.title} using ${data.provider || 'AI'}`);
+            successCount++;
             
             // Update local state to reflect the new image
             setRecipes(prev => prev.map(r => 
@@ -406,23 +416,46 @@ export const useEnhancedMealPlan = () => {
             
             // Refresh plan items to show updated recipes
             loadPlanItems(planId);
+          } else {
+            console.error(`Image generation failed for ${recipe.title}:`, data);
+            failCount++;
           }
         } catch (error) {
           console.error(`Error generating image for ${recipe.title}:`, error);
+          failCount++;
         }
         
         // Add a small delay between requests to avoid overwhelming the API
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      if (recipesWithoutImages.length > 0) {
-        toast({
-          title: "Imagens das receitas",
-          description: `Gerando imagens para ${recipesWithoutImages.length} receitas...`,
-        });
+      // Show summary toast
+      if (successCount > 0 || failCount > 0) {
+        if (successCount > 0 && failCount === 0) {
+          toast({
+            title: "Imagens geradas!",
+            description: `${successCount} imagens foram geradas com sucesso.`,
+          });
+        } else if (successCount > 0 && failCount > 0) {
+          toast({
+            title: "Imagens parcialmente geradas",
+            description: `${successCount} imagens geradas, ${failCount} falharam. Você pode gerar manualmente as que falharam.`,
+          });
+        } else {
+          toast({
+            title: "Falha na geração",
+            description: "Não foi possível gerar imagens automaticamente. Você pode gerar manualmente clicando em cada receita.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('Error in generateImagesForPlan:', error);
+      toast({
+        title: "Erro na geração de imagens",
+        description: "Ocorreu um erro durante a geração automática de imagens.",
+        variant: "destructive",
+      });
     }
   };
 

@@ -40,6 +40,11 @@ export const RecipeDialog: React.FC<RecipeDialogProps> = ({ recipe, isOpen, onCl
     try {
       setGeneratingImage(true);
       
+      toast({
+        title: "Gerando imagem...",
+        description: "Criando uma imagem personalizada para esta receita.",
+      });
+      
       const { data, error } = await supabase.functions.invoke('generate-meal-image', {
         body: { 
           recipeName: recipe.title,
@@ -48,30 +53,43 @@ export const RecipeDialog: React.FC<RecipeDialogProps> = ({ recipe, isOpen, onCl
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Erro na função Supabase');
+      }
       
-      if (data && data.imageUrl) {
-        // Update the recipe with the generated image
-        const { error: updateError } = await supabase
-          .from('recipes')
-          .update({ image_url: data.imageUrl })
-          .eq('id', recipe.id);
-          
-        if (updateError) throw updateError;
-        
-        toast({
-          title: "Imagem gerada!",
-          description: "A imagem da receita foi gerada com sucesso.",
-        });
-        
+      if (data && data.success && data.imageUrl) {
         // Update the local recipe state with the new image URL
         recipe.image_url = data.imageUrl;
+        
+        const provider = data.provider || 'AI';
+        toast({
+          title: "Imagem gerada!",
+          description: `A imagem da receita foi gerada com sucesso usando ${provider}.`,
+        });
+      } else {
+        console.error('Image generation failed:', data);
+        const errorMsg = data?.details || data?.error || 'Falha na geração da imagem';
+        throw new Error(errorMsg);
       }
     } catch (error) {
       console.error('Error generating image:', error);
+      
+      let errorMessage = "Não foi possível gerar a imagem da receita.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('API key')) {
+          errorMessage = "Chaves de API não configuradas. Entre em contato com o suporte.";
+        } else if (error.message.includes('Both Runware and OpenAI failed')) {
+          errorMessage = "Ambos os serviços de IA falharam. Tente novamente mais tarde.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Erro ao gerar imagem",
-        description: "Não foi possível gerar a imagem da receita.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

@@ -7,7 +7,7 @@ import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { DailyTip } from '@/components/ui/daily-tip';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
-import { Clock, Zap, Crown, Coffee, UtensilsCrossed, Cookie, Utensils } from 'lucide-react';
+import { Clock, Zap, Crown, Coffee, UtensilsCrossed, Cookie, Utensils, Image } from 'lucide-react';
 import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useNavigate } from 'react-router-dom';
@@ -210,19 +210,30 @@ export const MealPlansPage: React.FC = () => {
                     getMealsForDay(dayIndex).map((mealItem, index) => (
                         <Card key={index} className="border-gray-200 overflow-hidden">
                         {/* Recipe Image */}
-                        {mealItem.recipe?.image_url && (
-                          <div className="w-full h-32 relative">
+                        <div className="w-full h-32 relative">
+                          {mealItem.recipe?.image_url ? (
                             <img 
                               src={mealItem.recipe.image_url} 
                               alt={mealItem.recipe.title}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                console.error('Error loading meal image:', mealItem.recipe?.image_url);
+                                e.currentTarget.style.display = 'none';
+                              }}
                             />
-                            <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                              {getMealIcon(mealItem.meal_type)}
-                              {mealItem.meal_type}
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                              <div className="text-center">
+                                <Image className="h-8 w-8 text-green-500 mx-auto mb-1" />
+                                <p className="text-xs text-green-600">Sem imagem</p>
+                              </div>
                             </div>
+                          )}
+                          <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                            {getMealIcon(mealItem.meal_type)}
+                            {mealItem.meal_type}
                           </div>
-                        )}
+                        </div>
                         
                         <CardHeader className="pb-3">
                           <div className="flex justify-between items-start">
