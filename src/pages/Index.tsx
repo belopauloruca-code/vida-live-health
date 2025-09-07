@@ -22,7 +22,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <BrandHeader 
-            title="Vida Live" 
+            title="Light Life" 
             subtitle="Sua plataforma completa de saúde e bem-estar"
             className="justify-center mb-8"
           />
@@ -32,7 +32,7 @@ const Index = () => {
               onClick={() => navigate('/subscription')}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
             >
-              Começar Trial Gratuito
+              Quero começar
             </Button>
             <div className="flex gap-4 justify-center">
               <Button 

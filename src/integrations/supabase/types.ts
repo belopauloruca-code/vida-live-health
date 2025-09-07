@@ -490,6 +490,80 @@ export type Database = {
         }
         Relationships: []
       }
+      tea_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tea_recipes: {
+        Row: {
+          benefits: string | null
+          category_id: string | null
+          created_at: string
+          duration_min: number | null
+          id: string
+          ingredients: string
+          preparation: string
+          temperature: string | null
+          tips: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          benefits?: string | null
+          category_id?: string | null
+          created_at?: string
+          duration_min?: number | null
+          id?: string
+          ingredients: string
+          preparation: string
+          temperature?: string | null
+          tips?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          benefits?: string | null
+          category_id?: string | null
+          created_at?: string
+          duration_min?: number | null
+          id?: string
+          ingredients?: string
+          preparation?: string
+          temperature?: string | null
+          tips?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tea_recipes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "tea_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount_eur: number

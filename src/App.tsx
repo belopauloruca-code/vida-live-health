@@ -14,6 +14,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { MealPlansPage } from '@/pages/MealPlansPage';
 import { ExercisesPage } from '@/pages/ExercisesPage';
 import { DownloadAppPage } from '@/pages/DownloadAppPage';
+import { TeasPage } from '@/pages/TeasPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -48,6 +49,7 @@ function App() {
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/meal-plans" element={<ProtectedRoute requireTier="basic"><MealPlansPage /></ProtectedRoute>} />
               <Route path="/exercises" element={<ProtectedRoute requireTier="basic"><ExercisesPage /></ProtectedRoute>} />
+              <Route path="/teas" element={<ProtectedRoute><TeasPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute requireTier="basic"><ProfilePage /></ProtectedRoute>} />
               <Route path="/reports" element={<ProtectedRoute requireTier="basic"><ReportsPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

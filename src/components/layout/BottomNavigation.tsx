@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, Calendar, Activity, Download, User, MessageCircle, Lock, Utensils, BarChart3 } from 'lucide-react';
+import { Home, Calendar, Activity, Download, User, MessageCircle, Lock, Utensils, BarChart3, Coffee } from 'lucide-react';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 
 export const BottomNavigation: React.FC = () => {
@@ -15,7 +15,7 @@ export const BottomNavigation: React.FC = () => {
     { icon: Home, label: t('navigation.dashboard'), path: '/dashboard', requiresPremium: false, requiredTier: undefined },
     { icon: Utensils, label: t('navigation.meals'), path: '/meal-plans', requiresPremium: true, requiredTier: 'basic' as const },
     { icon: Activity, label: t('navigation.exercises'), path: '/exercises', requiresPremium: true, requiredTier: 'basic' as const },
-    { icon: BarChart3, label: 'Relatórios', path: '/reports', requiresPremium: true, requiredTier: 'basic' as const },
+    { icon: Coffee, label: 'Chás', path: '/teas', requiresPremium: false, requiredTier: undefined },
     { icon: MessageCircle, label: t('navigation.assistant'), path: '/ai-assistant', requiresPremium: true, requiredTier: 'premium' as const },
     { icon: User, label: t('navigation.profile'), path: '/profile', requiresPremium: true, requiredTier: 'basic' as const },
   ];

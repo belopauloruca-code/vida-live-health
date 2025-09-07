@@ -28,7 +28,7 @@ export const HomePage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-b from-green-50 to-white flex items-center justify-center">
         <div className="text-center px-4">
           <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            <span className="text-green-500">{t('home.title')}</span>
+            <span className="text-green-500">Light Life</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             {t('home.subtitle')}
@@ -59,7 +59,7 @@ export const HomePage: React.FC = () => {
               onClick={() => navigate('/subscription')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Assinar Plano
+              Quero começar
             </Button>
             <Button 
               variant="outline" 
@@ -128,7 +128,7 @@ export const HomePage: React.FC = () => {
         
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            <span className="text-green-500">{t('home.title')}</span>
+            <span className="text-green-500">Light Life</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
             {t('home.subtitle')}
@@ -141,7 +141,7 @@ export const HomePage: React.FC = () => {
               onClick={() => navigate('/subscription')}
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              {t('home.subscribe')}
+              Quero começar
             </Button>
             <Button 
               variant="outline" 
@@ -163,6 +163,45 @@ export const HomePage: React.FC = () => {
             >
               {t('home.downloadApp')}
             </Button>
+          </div>
+        </div>
+
+        {/* Tea Highlight Section */}
+        <div className="mb-16 p-8 bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl border border-green-100">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              🍵 +500 Receitas de Chás
+            </h2>
+            <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+              Descubra nossa coleção completa de chás funcionais! Termogênicos para acelerar o metabolismo, 
+              calmantes para o sono, digestivos para o pós-refeição, detox para eliminar toxinas e muito mais.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
+              <div className="bg-orange-100 p-3 rounded-lg">
+                <div className="text-orange-600 font-semibold">Termogênicos</div>
+                <div className="text-orange-500">Acelera metabolismo</div>
+              </div>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <div className="text-green-600 font-semibold">Digestivos</div>
+                <div className="text-green-500">Melhora digestão</div>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <div className="text-purple-600 font-semibold">Calmantes</div>
+                <div className="text-purple-500">Relaxamento</div>
+              </div>
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <div className="text-blue-600 font-semibold">Detox</div>
+                <div className="text-blue-500">Elimina toxinas</div>
+              </div>
+              <div className="bg-yellow-100 p-3 rounded-lg">
+                <div className="text-yellow-600 font-semibold">Imunidade</div>
+                <div className="text-yellow-500">Fortalece defesas</div>
+              </div>
+              <div className="bg-pink-100 p-3 rounded-lg">
+                <div className="text-pink-600 font-semibold">Beleza</div>
+                <div className="text-pink-500">Antioxidantes</div>
+              </div>
+            </div>
           </div>
         </div>
 
