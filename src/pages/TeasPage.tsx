@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Clock, Droplets, Leaf, Heart, Zap, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { getTeaImage } from '@/utils/recipeImages';
 
 interface TeaCategory {
   id: string;
@@ -121,17 +123,21 @@ export const TeasPage: React.FC = () => {
               const colorClass = categoryColors[categoryName as keyof typeof categoryColors] || 'bg-green-500';
               
               return (
-                <Card key={recipe.id} className="cursor-pointer hover:shadow-lg transition-shadow"
+                <Card key={recipe.id} className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
                       onClick={() => setSelectedRecipe(recipe)}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className={`p-1 rounded-full ${colorClass} text-white`}>
-                        <IconComponent className="h-4 w-4" />
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {categoryName}
-                      </Badge>
+                  <div className="w-full h-32 relative">
+                    <img 
+                      src={getTeaImage(categoryName)} 
+                      alt={recipe.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                      <IconComponent className="h-3 w-3" />
+                      {categoryName}
                     </div>
+                  </div>
+                  <CardHeader className="pb-3">
                     <CardTitle className="text-lg leading-tight">{recipe.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -168,14 +174,21 @@ export const TeasPage: React.FC = () => {
                 const colorClass = categoryColors[category.name as keyof typeof categoryColors] || 'bg-green-500';
                 
                 return (
-                  <Card key={recipe.id} className="cursor-pointer hover:shadow-lg transition-shadow"
+                  <Card key={recipe.id} className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
                         onClick={() => setSelectedRecipe(recipe)}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`p-1 rounded-full ${colorClass} text-white`}>
-                          <IconComponent className="h-4 w-4" />
-                        </div>
+                    <div className="w-full h-32 relative">
+                      <img 
+                        src={getTeaImage(category.name)} 
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                        <IconComponent className="h-3 w-3" />
+                        {category.name}
                       </div>
+                    </div>
+                    <CardHeader className="pb-3">
                       <CardTitle className="text-lg leading-tight">{recipe.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -268,6 +281,10 @@ export const TeasPage: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      <div className="pb-20">
+        <BottomNavigation />
+      </div>
     </div>
   );
 };

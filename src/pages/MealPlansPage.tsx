@@ -12,6 +12,7 @@ import { useEnhancedMealPlan } from '@/hooks/useEnhancedMealPlan';
 import { usePremiumAccess } from '@/hooks/usePremiumAccess';
 import { useNavigate } from 'react-router-dom';
 import { RecipeDialog } from '@/components/meal-plans/RecipeDialog';
+import { getRecipeImage } from '@/utils/recipeImages';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -211,24 +212,12 @@ export const MealPlansPage: React.FC = () => {
                         <Card key={index} className="border-gray-200 overflow-hidden">
                         {/* Recipe Image */}
                         <div className="w-full h-32 relative">
-                          {mealItem.recipe?.image_url ? (
-                            <img 
-                              src={mealItem.recipe.image_url} 
-                              alt={mealItem.recipe.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                console.error('Error loading meal image:', mealItem.recipe?.image_url);
-                                e.currentTarget.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                              <div className="text-center">
-                                <Image className="h-8 w-8 text-green-500 mx-auto mb-1" />
-                                <p className="text-xs text-green-600">Sem imagem</p>
-                              </div>
-                            </div>
-                          )}
+                          <img 
+                            src={mealItem.recipe?.image_url || getRecipeImage(mealItem.recipe?.title || '')} 
+                            alt={mealItem.recipe?.title || 'Receita'}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
                           <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
                             {getMealIcon(mealItem.meal_type)}
                             {mealItem.meal_type}

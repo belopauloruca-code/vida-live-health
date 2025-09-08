@@ -19,6 +19,25 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/5">
+      {/* Hero Banner */}
+      <div className="w-full h-64 md:h-80 relative overflow-hidden mb-8">
+        <img 
+          src="/lovable-uploads/573c9d4e-f44d-4ed6-89c7-2d09bb2625c9.png"
+          alt="Light Life - Plataforma de saúde e bem-estar"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30 flex items-center">
+          <div className="container mx-auto px-4">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              Light Life
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl">
+              Transforme sua vida com saúde e bem-estar
+            </p>
+          </div>
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <BrandHeader 

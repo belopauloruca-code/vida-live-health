@@ -76,6 +76,77 @@ export const drAjudaResponses: DrAjudaResponseSystem = {
         '🔥 A motivação vem e vai, mas os hábitos ficam! Comece pequeno: uma caminhada, um copo d\'água extra, uma refeição nutritiva. Pequenas vitórias constroem grandes conquistas!',
         '🌈 Você sabe que já superou 100% dos seus dias difíceis até agora? Isso mostra sua força! Confie no processo, confie em você. Estou aqui para te apoiar sempre!'
       ]
+    },
+    {
+      triggers: ['sono', 'dormir', 'quantas horas', 'emagrecimento', 'dormir quanto'],
+      responses: [
+        '😴 Dormir bem é ouro pro teu corpo! A maioria dos adultos precisa de 7 a 9 horas por noite pra ter energia e emagrecer com saúde.',
+        'O sono é o teu carregador natural 🔋 Quanto mais regular a tua rotina de sono, mais disposição e resultados vais ter!'
+      ]
+    },
+    {
+      triggers: ['sobre app', 'vida leve', 'aplicativo', 'como funciona'],
+      responses: [
+        '✨ O Vida Leve é o teu parceiro na jornada de emagrecimento! Aqui encontras receitas saudáveis, planos e muita motivação 💪',
+        'Criámos o app pra te ajudar a mudar hábitos de forma simples, sem dietas malucas 🚫🍕 É o teu espaço pra aprender, praticar e transformar 🔥'
+      ]
+    },
+    {
+      triggers: ['alimentacao', 'comer', 'melhor dieta', 'alimentação saudável'],
+      responses: [
+        '🥗 Mais vegetais, proteínas magras e menos processados = fórmula simples e poderosa 💪',
+        'Equilíbrio é tudo ⚖️ Evita exageros, dá preferência a comida natural e não esqueças da água 💧'
+      ]
+    },
+    {
+      triggers: ['agua', 'beber', 'litros de agua', 'hidratação'],
+      responses: [
+        '💧 A água é tua melhor amiga! A maioria das pessoas precisa de 1,5 a 2L por dia, mas depende do teu ritmo e clima 🌞',
+        'Beber água ajuda a controlar a fome, melhora a digestão e dá mais energia 🚀 Mantém sempre a tua garrafinha perto 😉'
+      ]
+    },
+    {
+      triggers: ['ansiedade', 'ansioso', 'controlar ansiedade', 'atrapalha emagrecimento'],
+      responses: [
+        'Respira fundo 😮‍💨 A ansiedade pode atrapalhar sim, mas caminhadas 🚶, meditação 🧘 e uma rotina equilibrada ajudam muito ✨',
+        'Cuida da tua mente tanto quanto do corpo 🧠❤️ Encontra algo que relaxa: música, leitura 📖 ou até uns minutos de silêncio.'
+      ]
+    },
+    {
+      triggers: ['rotina matinal', 'acordar', 'melhor rotina', 'começar bem dia'],
+      responses: [
+        '☀️ Começa o dia com um copo de água 💧, alonga o corpo 🧘 e toma um pequeno-almoço nutritivo 🥣',
+        'Uma boa manhã define todo o teu dia 💪 Evita o telemóvel logo ao acordar 📵 e dedica uns minutos só pra ti 🙌'
+      ]
+    },
+    {
+      triggers: ['foco', 'manter foco', 'disciplina', 'não desistir'],
+      responses: [
+        '🎯 Define metas pequenas e comemora cada vitória! O foco cresce quando vês o progresso 💪',
+        'Cria hábitos simples 🔄 Mesmo sem motivação, a rotina mantém-te no caminho certo ✅'
+      ]
+    },
+    {
+      triggers: ['metabolismo', 'acelerar metabolismo', 'metabolismo lento'],
+      responses: [
+        '🔥 Movimento é vida! Exercícios, boa alimentação e água mantêm o metabolismo ativo.',
+        'Dormir bem 😴, comer proteínas 🥩 e mexer o corpo 🏋️ são aliados fortes pro teu metabolismo.'
+      ]
+    },
+    {
+      triggers: ['manda motivação', 'preciso força', 'frase do dia', 'inspira-me'],
+      responses: [
+        '💪 Nunca subestimes o poder de um pequeno passo. Ele pode mudar toda a tua jornada!',
+        '🔥 Disciplina é fazer mesmo quando não apetece. E é aí que a magia acontece!',
+        '🌱 O teu corpo é o reflexo dos teus hábitos. Planta saúde todos os dias!',
+        '🙌 O sucesso não vem de motivação, mas de consistência. Continua firme, estás no caminho certo!',
+        '⚡ Cada treino, cada refeição saudável, cada copo de água… tudo conta!',
+        '🚀 Não compares o teu capítulo 1 com o capítulo 20 de alguém. A tua jornada é única!',
+        '🎯 Foco na meta! Imagina-te já a alcançar o que desejas… agora vai lá e faz acontecer!',
+        '✨ Pequenas vitórias diárias acumulam-se em grandes resultados!',
+        '😎 O segredo não é velocidade, é consistência. Vai no teu ritmo e nunca pares!',
+        '🧠 Cuida da mente e do corpo ao mesmo tempo. O equilíbrio é a chave da leveza.'
+      ]
     }
   ],
   thankYouResponses: [
