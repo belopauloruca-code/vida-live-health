@@ -12,7 +12,7 @@ import { RegisterPage } from '@/pages/RegisterPage';
 
 import { DashboardPage } from '@/pages/DashboardPage';
 import { MealPlansPage } from '@/pages/MealPlansPage';
-import { ExercisesPage } from '@/pages/ExercisesPage';
+import ExercisesPage from '@/pages/ExercisesPage';
 import { DownloadAppPage } from '@/pages/DownloadAppPage';
 import { TeasPage } from '@/pages/TeasPage';
 import { ProfilePage } from '@/pages/ProfilePage';
