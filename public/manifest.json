@@ -4,7 +4,7 @@
   "description": "Seu companheiro completo de saúde e bem-estar",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#4CAF50",
   "theme_color": "#4CAF50",
   "orientation": "portrait-primary",
   "icons": [

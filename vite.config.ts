@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => ({
         short_name: 'Vida Leve',
         description: 'Seu companheiro completo de saúde e bem-estar',
         theme_color: '#4CAF50',
-        background_color: '#ffffff',
+        background_color: '#4CAF50',
         display: 'standalone',
         start_url: '/',
         icons: [

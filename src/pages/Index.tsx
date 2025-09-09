@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BrandHeader } from '@/components/ui/brand-header';
 import { Heart, Activity, Calendar, Droplets, Clock, Shield } from 'lucide-react';
+import teaIcon from '../assets/tea-icon.webp';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Index = () => {
     { icon: Calendar, title: 'Planos de Refeição', description: 'Cardápios semanais balanceados' },
     { icon: Droplets, title: 'Hidratação Inteligente', description: 'Lembretes para beber água' },
     { icon: Clock, title: 'Rotina Otimizada', description: 'Horários personalizados para seus objetivos' },
-    { icon: Shield, title: 'Trial Gratuito', description: '24 horas de acesso premium' }
+    { icon: Shield, title: '+ 500 Receitas de Chás', description: 'Receitas funcionais para sua saúde', image: teaIcon }
   ];
 
   return (
@@ -22,7 +23,7 @@ const Index = () => {
       {/* Hero Banner */}
       <div className="w-full h-64 md:h-80 relative overflow-hidden mb-8">
         <img 
-          src="/lovable-uploads/573c9d4e-f44d-4ed6-89c7-2d09bb2625c9.png"
+          src="/lovable-uploads/d49cc7e9-bbee-4091-bf10-83af1367e109.png"
           alt="Light Life - Plataforma de saúde e bem-estar"
           className="w-full h-full object-cover"
         />
@@ -80,9 +81,13 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {benefits.map(({ icon: Icon, title, description }, index) => (
+          {benefits.map(({ icon: Icon, title, description, image }, index) => (
             <Card key={index} className="p-6 text-center border-border/50 hover:shadow-lg transition-shadow">
-              <Icon className="h-12 w-12 text-primary mx-auto mb-4" />
+              {image ? (
+                <img src={image} alt={title} className="w-12 h-12 mx-auto mb-4 object-contain" />
+              ) : (
+                <Icon className="h-12 w-12 text-primary mx-auto mb-4" />
+              )}
               <h3 className="text-lg font-semibold mb-2 text-foreground">{title}</h3>
               <p className="text-muted-foreground text-sm">{description}</p>
             </Card>
