@@ -435,7 +435,7 @@ const ExercisesPage: React.FC = () => {
                     alt={exercise.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = getFallbackExerciseImage(exercise.category);
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
                     }}
                   />
                 </div>

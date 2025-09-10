@@ -72,11 +72,11 @@ const getLevelContext = (level: string): string => {
 // Fallback images for different exercise categories
 export const getFallbackExerciseImage = (category: string): string => {
   const fallbackImages = {
-    'Cardio': '/images/exercises/cardio-default.jpg',
-    'Força': '/images/exercises/strength-default.jpg', 
-    'Flexibilidade': '/images/exercises/flexibility-default.jpg',
-    'Yoga': '/images/exercises/yoga-default.jpg',
-    'Recomendados': '/images/exercises/general-default.jpg'
+    'Cardio': '/placeholder.svg',
+    'Força': '/placeholder.svg', 
+    'Flexibilidade': '/placeholder.svg',
+    'Yoga': '/placeholder.svg',
+    'Recomendados': '/placeholder.svg'
   };
-  return fallbackImages[category as keyof typeof fallbackImages] || '/images/exercises/general-default.jpg';
+  return fallbackImages[category as keyof typeof fallbackImages] || '/placeholder.svg';
 };

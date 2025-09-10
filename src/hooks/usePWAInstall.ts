@@ -55,10 +55,14 @@ export const usePWAInstall = () => {
       setCanInstallPWA(false);
       setIsInstalled(true);
       setIsInstalling(false);
-        toast({
-          title: "Instalação concluída!",
-          description: "Bem-vindo ao Vida Leve! O app está pronto para usar.",
-        });
+      
+      // Set flag to open onboarding after install
+      localStorage.setItem('openOnboardingAfterInstall', 'true');
+      
+      toast({
+        title: "Instalação concluída!",
+        description: "Bem-vindo ao Vida Leve! O app está pronto para usar.",
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
