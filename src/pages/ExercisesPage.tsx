@@ -12,7 +12,8 @@ import { BrandHeader } from '@/components/ui/brand-header';
 import { TrialBanner } from '@/components/ui/trial-banner';
 import { SubscriptionContentGate } from '@/components/ui/subscription-content-gate';
 import { getEmbedSource } from '@/utils/videoUtils';
-import { generateExerciseImages, getFallbackExerciseImage } from '@/utils/exerciseImages';
+import { generateExerciseImages, getFallbackExerciseImage, getExerciseCardImage } from '@/utils/exerciseImages';
+import { ExercisePlayerDialog } from '@/components/exercises/ExercisePlayerDialog';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
 
 interface Exercise {
@@ -41,6 +42,8 @@ const ExercisesPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
   const [selectedLevel, setSelectedLevel] = useState<string>('Todos');
   const [userStats, setUserStats] = useState({ completedExercises: 0, totalCalories: 0, totalTime: 0 });
+  const [playerExercise, setPlayerExercise] = useState<Exercise | null>(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
   const { hasBasicAccess, hasPremiumAccess } = usePremiumAccess();
 
   useEffect(() => {
@@ -130,9 +133,8 @@ const ExercisesPage: React.FC = () => {
   };
 
   const startExercise = (exercise: Exercise) => {
-    setActiveTimer(exercise.id);
-    setTimeRemaining(exercise.duration_min * 60);
-    toast.success(`Exercício iniciado: ${exercise.title} - ${exercise.duration_min} minutos`);
+    setPlayerExercise(exercise);
+    setPlayerOpen(true);
   };
 
   const completeExercise = async () => {
@@ -316,10 +318,22 @@ const ExercisesPage: React.FC = () => {
     <div className="min-h-screen bg-background pb-safe-bottom-nav">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <BrandHeader 
-          title="Biblioteca de Exercícios"
-          subtitle="Exercícios categorizados com vídeos e IA Lovable"
-        />
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <BrandHeader 
+              title="Biblioteca de Exercícios"
+              subtitle="Exercícios categorizados com vídeos e IA Lovable"
+            />
+          </div>
+          {!hasPremiumAccess && (
+            <Button 
+              onClick={() => window.location.href = '/subscription'}
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold px-6"
+            >
+              ⭐ Assinar Premium
+            </Button>
+          )}
+        </div>
         
         <TrialBanner />
 
@@ -429,9 +443,9 @@ const ExercisesPage: React.FC = () => {
             <Card key={exercise.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
                 {/* Exercise Image */}
-                <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/10 overflow-hidden">
                   <img 
-                    src={getFallbackExerciseImage(exercise.category)} 
+                    src={getExerciseCardImage(exercise)} 
                     alt={exercise.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -493,7 +507,7 @@ const ExercisesPage: React.FC = () => {
                     onClick={() => startExercise(exercise)}
                     className="flex-1"
                     size="sm"
-                    disabled={!!activeTimer}
+                    disabled={!!activeTimer || playerOpen}
                   >
                     <Play className="h-4 w-4 mr-1" />
                     Iniciar
@@ -672,6 +686,17 @@ const ExercisesPage: React.FC = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Exercise Player Dialog */}
+        <ExercisePlayerDialog
+          exercise={playerExercise}
+          open={playerOpen}
+          onOpenChange={setPlayerOpen}
+          onComplete={() => {
+            loadUserStats();
+            setPlayerExercise(null);
+          }}
+        />
       </div>
       
       <BottomNavigation />

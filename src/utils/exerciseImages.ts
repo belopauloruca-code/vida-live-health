@@ -69,14 +69,28 @@ const getLevelContext = (level: string): string => {
   return contexts[level as keyof typeof contexts] || contexts['Iniciante'];
 };
 
-// Fallback images for different exercise categories
+// Fallback images for different exercise categories with real exercise images
 export const getFallbackExerciseImage = (category: string): string => {
   const fallbackImages = {
-    'Cardio': '/placeholder.svg',
-    'Força': '/placeholder.svg', 
-    'Flexibilidade': '/placeholder.svg',
-    'Yoga': '/placeholder.svg',
-    'Recomendados': '/placeholder.svg'
+    'Cardio': '/images/exercises/cardio.jpg',
+    'Força': '/images/exercises/strength.jpg', 
+    'Flexibilidade': '/images/exercises/flexibility.jpg',
+    'Yoga': '/images/exercises/yoga.jpg',
+    'Recomendados': '/images/exercises/general.jpg'
   };
   return fallbackImages[category as keyof typeof fallbackImages] || '/placeholder.svg';
+};
+
+// Get exercise card image with YouTube thumbnail support
+export const getExerciseCardImage = (exercise: { video_url?: string; category: string; title: string }): string => {
+  // If YouTube video exists, extract thumbnail
+  if (exercise.video_url) {
+    const ytMatch = exercise.video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{6,})/);
+    if (ytMatch?.[1]) {
+      return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+    }
+  }
+  
+  // Otherwise use category fallback
+  return getFallbackExerciseImage(exercise.category);
 };
