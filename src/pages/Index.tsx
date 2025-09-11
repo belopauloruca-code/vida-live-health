@@ -39,9 +39,7 @@ const Index = () => {
         <img src="/lovable-uploads/d49cc7e9-bbee-4091-bf10-83af1367e109.png" alt="Light Life - Plataforma de saúde e bem-estar" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30 flex items-center">
           <div className="container px-4 mx-[23px]">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-              Light Life
-            </h1>
+            
             
           </div>
         </div>
