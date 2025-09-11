@@ -16,6 +16,10 @@ import { OnboardingPage } from '@/pages/OnboardingPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { MealPlansPage } from '@/pages/MealPlansPage';
 import ExercisesPage from '@/pages/ExercisesPage';
+import FlexibilityPage from '@/pages/FlexibilityPage';
+import YogaPage from '@/pages/YogaPage';
+import FavoritesPage from '@/pages/FavoritesPage';
+import AdvancedPage from '@/pages/AdvancedPage';
 import { DownloadAppPage } from '@/pages/DownloadAppPage';
 import { TeasPage } from '@/pages/TeasPage';
 import { ProfilePage } from '@/pages/ProfilePage';
@@ -55,6 +59,10 @@ function App() {
               <Route path="/meal-plans" element={<ProtectedRoute requireTier="basic"><OnboardingGate><MealPlansPage /></OnboardingGate></ProtectedRoute>} />
               <Route path="/exercises" element={<ProtectedRoute requireTier="basic"><OnboardingGate><ExercisesPage /></OnboardingGate></ProtectedRoute>} />
               <Route path="/teas" element={<ProtectedRoute><OnboardingGate><TeasPage /></OnboardingGate></ProtectedRoute>} />
+              <Route path="/flexibility" element={<ProtectedRoute requireTier="basic"><OnboardingGate><FlexibilityPage /></OnboardingGate></ProtectedRoute>} />
+              <Route path="/yoga" element={<ProtectedRoute><OnboardingGate><YogaPage /></OnboardingGate></ProtectedRoute>} />
+              <Route path="/favorites" element={<ProtectedRoute><OnboardingGate><FavoritesPage /></OnboardingGate></ProtectedRoute>} />
+              <Route path="/advanced" element={<ProtectedRoute requireTier="premium"><OnboardingGate><AdvancedPage /></OnboardingGate></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute requireTier="basic"><OnboardingGate><ProfilePage /></OnboardingGate></ProtectedRoute>} />
               <Route path="/reports" element={<ProtectedRoute requireTier="basic"><OnboardingGate><ReportsPage /></OnboardingGate></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><OnboardingGate><SettingsPage /></OnboardingGate></ProtectedRoute>} />

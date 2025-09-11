@@ -38,7 +38,7 @@ export const BottomNavigation: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-1 z-50 bottom-nav-safe">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-2 py-1 z-50 bottom-nav-safe shadow-lg">
       <div className="flex justify-around items-center max-w-lg mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -56,22 +56,25 @@ export const BottomNavigation: React.FC = () => {
             <button
               key={item.path}
               onClick={() => handleNavigation(item.path, item.requiresPremium, item.requiredTier)}
-              className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-2 py-1 rounded-lg transition-colors relative ${
+              className={`flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-2 py-1 rounded-lg transition-all duration-200 relative ${
                 location.pathname === item.path
-                  ? 'text-green-500 bg-green-50'
+                  ? 'text-green-500 bg-green-50 scale-105 shadow-md'
                   : isLocked
                   ? 'text-gray-400 hover:text-gray-500'
-                  : 'text-gray-500 hover:text-green-500 hover:bg-green-50'
+                  : 'text-gray-600 hover:text-green-500 hover:bg-green-50 hover:scale-105'
               }`}
             >
-              <Icon className={`h-5 w-5 ${isLocked ? 'opacity-60' : ''}`} />
-              <span className={`text-xs font-medium mt-1 ${isLocked ? 'opacity-60' : ''}`}>
+              <Icon className={`h-5 w-5 ${isLocked ? 'opacity-60' : ''} ${location.pathname === item.path ? 'drop-shadow-sm' : ''}`} />
+              <span className={`text-xs font-medium mt-1 ${isLocked ? 'opacity-60' : ''} ${location.pathname === item.path ? 'font-semibold' : ''}`}>
                 {item.label}
               </span>
               {isLocked && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center shadow-sm">
                   <Lock className="h-2 w-2 text-white" />
                 </div>
+              )}
+              {location.pathname === item.path && (
+                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-green-500 rounded-full"></div>
               )}
             </button>
           );

@@ -1,5 +1,6 @@
 // Utility for generating exercise images with Lovable AI
 import { supabase } from '@/integrations/supabase/client';
+import { UniqueImageSystem } from './uniqueImageSystem';
 
 export interface ExerciseImageData {
   exerciseId: string;
@@ -81,8 +82,8 @@ export const getFallbackExerciseImage = (category: string): string => {
   return fallbackImages[category as keyof typeof fallbackImages] || '/placeholder.svg';
 };
 
-// Get exercise card image with YouTube thumbnail support
-export const getExerciseCardImage = (exercise: { video_url?: string; category: string; title: string }): string => {
+// Get exercise card image with YouTube thumbnail support and unique image system
+export const getExerciseCardImage = (exercise: { video_url?: string; category: string; title: string; id?: string }): string => {
   // If YouTube video exists, extract thumbnail
   if (exercise.video_url) {
     const ytMatch = exercise.video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{6,})/);
@@ -91,6 +92,7 @@ export const getExerciseCardImage = (exercise: { video_url?: string; category: s
     }
   }
   
-  // Otherwise use category fallback
-  return getFallbackExerciseImage(exercise.category);
+  // Use unique image system to avoid repetition
+  const identifier = exercise.id || exercise.title;
+  return UniqueImageSystem.getUniqueImage('exercise_cards', exercise.category, identifier);
 };
