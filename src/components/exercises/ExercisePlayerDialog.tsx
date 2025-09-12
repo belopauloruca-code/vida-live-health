@@ -203,12 +203,17 @@ export const ExercisePlayerDialog: React.FC<ExercisePlayerDialogProps> = ({
 
           {/* Exercise Image/Animation Area */}
           <div className="h-1/2 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-400/30 to-green-600/20 flex items-center justify-center">
               <div className="text-center">
                 <div className="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mb-4">
-                  <div className="text-4xl">💪</div>
+                  <div className="text-6xl">
+                    {exercise.category === 'Cardio' ? '🏃' : 
+                     exercise.category === 'Força' ? '💪' : 
+                     exercise.category === 'Flexibilidade' ? '🤸' : 
+                     exercise.category === 'Yoga' ? '🧘' : '🏋️'}
+                  </div>
                 </div>
-                <p className="text-white/80 text-sm">{exercise.category}</p>
+                <p className="text-white font-medium text-lg">{exercise.category}</p>
               </div>
             </div>
           </div>

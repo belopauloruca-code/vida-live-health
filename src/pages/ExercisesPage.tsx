@@ -397,15 +397,15 @@ const ExercisesPage: React.FC = () => {
 
         {/* Filters */}
         <Card className="p-4 mb-6">
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Filtros:</span>
             </div>
             
             {/* Category Filter */}
-            <div className="flex gap-1 flex-wrap">
-              {['Todos', 'Cardio', 'Força', 'Flexibilidade', 'Yoga', 'Favoritos'].map((category) => (
+            <div className="flex gap-2 flex-wrap">
+              {['Todos', 'Cardio', 'Força'].map((category) => (
                 <Button
                   key={category}
                   variant={selectedCategory === category ? 'default' : 'outline'}
@@ -413,15 +413,52 @@ const ExercisesPage: React.FC = () => {
                   onClick={() => setSelectedCategory(category)}
                   className="text-xs"
                 >
-                  {category === 'Favoritos' && <Star className="h-3 w-3 mr-1" />}
                   {category}
                 </Button>
               ))}
+              <Button
+                variant={selectedCategory === 'Flexibilidade' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory('Flexibilidade')}
+                className="text-xs bg-green-600 hover:bg-green-700 text-white border-green-600"
+              >
+                Flexibilidade
+              </Button>
+              <Button
+                variant={selectedCategory === 'Yoga' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory('Yoga')}
+                className="text-xs"
+              >
+                Yoga
+              </Button>
+            </div>
+            
+            {/* Favorites */}
+            <div className="flex gap-2">
+              <Button
+                variant={selectedCategory === 'Favoritos' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory('Favoritos')}
+                className="text-xs"
+              >
+                <Star className="h-3 w-3 mr-1" />
+                Favoritos
+              </Button>
             </div>
             
             {/* Level Filter */}
-            <div className="flex gap-1 flex-wrap">
-              {['Todos', 'Iniciante', 'Intermediário', 'Avançado'].map((level) => (
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={selectedLevel === 'Todos' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedLevel('Todos')}
+                className="text-xs bg-green-600 hover:bg-green-700 text-white border-green-600"
+              >
+                <Target className="h-3 w-3 mr-1" />
+                Todos
+              </Button>
+              {['Iniciante', 'Intermediário', 'Avançado'].map((level) => (
                 <Button
                   key={level}
                   variant={selectedLevel === level ? 'default' : 'outline'}
@@ -443,15 +480,26 @@ const ExercisesPage: React.FC = () => {
             <Card key={exercise.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
                 {/* Exercise Image */}
-                <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/10 overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-primary/20 to-primary/10 overflow-hidden relative">
                   <img 
                     src={getExerciseCardImage(exercise)} 
                     alt={exercise.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                      (e.target as HTMLImageElement).src = getFallbackExerciseImage(exercise.category);
                     }}
                   />
+                  {/* Exercise Category Icon Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-3 left-3 text-white">
+                    <div className="text-2xl mb-1">
+                      {exercise.category === 'Cardio' ? '🏃' : 
+                       exercise.category === 'Força' ? '💪' : 
+                       exercise.category === 'Flexibilidade' ? '🤸' : 
+                       exercise.category === 'Yoga' ? '🧘' : '🏋️'}
+                    </div>
+                    <p className="text-sm font-medium">{exercise.category}</p>
+                  </div>
                 </div>
                 
                 {/* Favorite Button */}
