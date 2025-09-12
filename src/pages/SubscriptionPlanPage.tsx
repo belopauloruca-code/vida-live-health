@@ -192,7 +192,7 @@ export const SubscriptionPlanPage: React.FC = () => {
         'Lista de compras automática',
         'Acesso antecipado a novidades'
       ],
-      stripeMonthlyUrl: 'https://buy.stripe.com/fZufZi6RI8xk72G32L2sM0b',
+      stripeMonthlyUrl: 'https://buy.stripe.com/fZu00k2BsfZMdr4avd2sM0g',
       stripeYearlyUrl: 'https://buy.stripe.com/7sYcN65NE00O2Mqbzh2sM0f',
       icon: '⚡'
     }

@@ -106,13 +106,23 @@ export const TeasPage: React.FC = () => {
       </div>
 
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-        <TabsList className="grid w-full grid-cols-7 mb-8">
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          {categories.map(category => (
-            <TabsTrigger key={category.id} value={category.id} className="text-xs">
-              {category.name.split(' ')[0]}
-            </TabsTrigger>
-          ))}
+        <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 mb-8 bg-card border rounded-lg p-1">
+          <TabsTrigger value="all" className="text-xs font-medium">Todos</TabsTrigger>
+          {categories.map(category => {
+            const shortName = category.name.includes('Beleza') ? 'Beleza' :
+                            category.name.includes('Detox') ? 'Detox' :
+                            category.name.includes('Imunidade') ? 'Imunidade' :
+                            category.name.includes('Termogênicos') ? 'Termogênicos' :
+                            category.name.includes('Digestivos') ? 'Digestivos' :
+                            category.name.includes('Calmantes') ? 'Calmantes' :
+                            category.name.split(' ')[0];
+            
+            return (
+              <TabsTrigger key={category.id} value={category.id} className="text-xs font-medium">
+                {shortName}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="all" className="mt-0">
