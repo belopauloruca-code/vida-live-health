@@ -18,6 +18,42 @@ export const useTrial = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const createTrialForNewUser = async () => {
+    if (!user) return;
+
+    try {
+      // Check if user is new (created recently)
+      const userCreatedAt = new Date(user.created_at).getTime();
+      const now = Date.now();
+      const oneDayInMs = 24 * 60 * 60 * 1000;
+      const isNewUser = (now - userCreatedAt) < oneDayInMs;
+
+      if (isNewUser) {
+        // Create trial automatically for new users
+        const { data: newTrial, error } = await supabase
+          .from('trials')
+          .insert({
+            user_id: user.id,
+          })
+          .select()
+          .single();
+
+        if (!error && newTrial) {
+          setTrial(newTrial);
+          const endsAt = new Date(newTrial.ends_at).getTime();
+          setTimeRemaining(Math.max(0, endsAt - now));
+
+          toast({
+            title: "🎉 Bem-vindo! Trial ativado!",
+            description: "Você tem 24 horas para explorar todos os recursos premium gratuitamente.",
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error creating trial for new user:', error);
+    }
+  };
+
   const checkTrial = async () => {
     if (!user) return;
 
@@ -34,26 +70,8 @@ export const useTrial = () => {
         const now = Date.now();
         setTimeRemaining(Math.max(0, endsAt - now));
       } else {
-        // Create new trial
-        const { data: newTrial, error } = await supabase
-          .from('trials')
-          .insert({
-            user_id: user.id,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        setTrial(newTrial);
-        const endsAt = new Date(newTrial.ends_at).getTime();
-        const now = Date.now();
-        setTimeRemaining(Math.max(0, endsAt - now));
-
-        toast({
-          title: "🎉 Trial ativado!",
-          description: "Você tem 24 horas para explorar todos os recursos premium.",
-        });
+        // Auto-create trial for new users
+        await createTrialForNewUser();
       }
     } catch (error) {
       console.error('Error checking trial:', error);

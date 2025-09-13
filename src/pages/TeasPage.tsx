@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Clock, Droplets, Leaf, Heart, Zap, Sparkles } from 'lucide-react';
+import { Clock, Droplets, Leaf, Heart, Zap, Sparkles, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
@@ -51,7 +52,8 @@ const categoryColors = {
 
 export const TeasPage: React.FC = () => {
   const { t } = useTranslation();
-  const { subscriptionTier, hasBasicAccess, hasPremiumAccess_Level, hasEliteAccess } = usePremiumAccess();
+  const navigate = useNavigate();
+  const { subscriptionTier, hasBasicAccess, hasPremiumAccess_Level, hasEliteAccess, hasPremiumAccess } = usePremiumAccess();
   const { isTrialActive } = useTrial();
   const [categories, setCategories] = useState<TeaCategory[]>([]);
   const [recipes, setRecipes] = useState<TeaRecipe[]>([]);
@@ -123,6 +125,29 @@ export const TeasPage: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Carregando receitas de chás...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Check if user has access to tea page
+  if (!hasPremiumAccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center p-6">
+          <div className="flex justify-center mb-4">
+            <Lock className="w-12 h-12 text-muted-foreground" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Área Premium</h2>
+          <p className="text-muted-foreground mb-4">
+            Os chás terapêuticos são exclusivos para assinantes. Assine agora e tenha acesso completo!
+          </p>
+          <Button 
+            onClick={() => navigate('/subscription')}
+            className="w-full"
+          >
+            Assinar Agora
+          </Button>
+        </Card>
       </div>
     );
   }

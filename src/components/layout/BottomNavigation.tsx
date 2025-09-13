@@ -15,7 +15,7 @@ export const BottomNavigation: React.FC = () => {
     { icon: Home, label: t('navigation.dashboard'), path: '/dashboard', requiresPremium: false, requiredTier: undefined },
     { icon: Utensils, label: t('navigation.meals'), path: '/meal-plans', requiresPremium: true, requiredTier: 'basic' as const },
     { icon: Activity, label: t('navigation.exercises'), path: '/exercises', requiresPremium: true, requiredTier: 'basic' as const },
-    { icon: Coffee, label: 'Chás', path: '/teas', requiresPremium: false, requiredTier: undefined },
+    { icon: Coffee, label: 'Chás', path: '/teas', requiresPremium: true, requiredTier: 'basic' as const },
     { icon: MessageCircle, label: t('navigation.assistant'), path: '/ai-assistant', requiresPremium: true, requiredTier: 'premium' as const },
     { icon: User, label: t('navigation.profile'), path: '/profile', requiresPremium: true, requiredTier: 'basic' as const },
   ];
