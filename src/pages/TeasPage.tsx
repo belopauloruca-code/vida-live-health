@@ -8,6 +8,9 @@ import { Clock, Droplets, Leaf, Heart, Zap, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { BottomNavigation } from '@/components/layout/BottomNavigation';
+import { SubscriptionContentGate } from '@/components/ui/subscription-content-gate';
+import { usePremiumAccess } from '@/hooks/usePremiumAccess';
+import { useTrial } from '@/hooks/useTrial';
 import { getTeaImage } from '@/utils/recipeImages';
 
 interface TeaCategory {
@@ -48,6 +51,8 @@ const categoryColors = {
 
 export const TeasPage: React.FC = () => {
   const { t } = useTranslation();
+  const { subscriptionTier, hasBasicAccess, hasPremiumAccess_Level, hasEliteAccess } = usePremiumAccess();
+  const { isTrialActive } = useTrial();
   const [categories, setCategories] = useState<TeaCategory[]>([]);
   const [recipes, setRecipes] = useState<TeaRecipe[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -80,6 +85,35 @@ export const TeasPage: React.FC = () => {
 
   const getCategoryName = (categoryId: string) => {
     return categories.find(cat => cat.id === categoryId)?.name || '';
+  };
+
+  // Lógica de acesso por planos
+  const getAccessibleCategories = () => {
+    // Durante trial ativo, acesso completo
+    if (isTrialActive) return categories;
+    
+    // Elite: Acesso a todas as categorias
+    if (hasEliteAccess) return categories;
+    
+    // Premium: Acesso a 4 categorias
+    if (hasPremiumAccess_Level) return categories.slice(0, 4);
+    
+    // Basic: Acesso a 2 categorias
+    if (hasBasicAccess) return categories.slice(0, 2);
+    
+    // Sem plano: Acesso a 1 categoria
+    return categories.slice(0, 1);
+  };
+
+  const hasAccessToCategory = (categoryId: string) => {
+    if (isTrialActive) return true;
+    const accessibleCategories = getAccessibleCategories();
+    return accessibleCategories.some(cat => cat.id === categoryId);
+  };
+
+  const getRecipesForCategory = (categoryId: string) => {
+    if (!hasAccessToCategory(categoryId)) return [];
+    return recipes.filter(recipe => recipe.category_id === categoryId);
   };
 
   if (loading) {
@@ -117,9 +151,16 @@ export const TeasPage: React.FC = () => {
                             category.name.includes('Calmantes') ? 'Calmantes' :
                             category.name.split(' ')[0];
             
+            const hasAccess = hasAccessToCategory(category.id);
+            
             return (
-              <TabsTrigger key={category.id} value={category.id} className="text-xs font-medium">
-                {shortName}
+              <TabsTrigger 
+                key={category.id} 
+                value={category.id} 
+                className={`text-xs font-medium ${!hasAccess ? 'opacity-50' : ''}`}
+                disabled={!hasAccess}
+              >
+                {shortName} {!hasAccess && '🔒'}
               </TabsTrigger>
             );
           })}
@@ -171,57 +212,71 @@ export const TeasPage: React.FC = () => {
           </div>
         </TabsContent>
 
-        {categories.map(category => (
-          <TabsContent key={category.id} value={category.id} className="mt-0">
-            <div className="mb-6 p-4 bg-card rounded-lg border">
-              <h2 className="text-xl font-semibold mb-2">{category.name}</h2>
-              <p className="text-muted-foreground">{category.description}</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRecipes.map(recipe => {
-                const IconComponent = categoryIcons[category.name as keyof typeof categoryIcons] || Leaf;
-                const colorClass = categoryColors[category.name as keyof typeof categoryColors] || 'bg-green-500';
-                
-                return (
-                  <Card key={recipe.id} className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
-                        onClick={() => setSelectedRecipe(recipe)}>
-                    <div className="w-full h-32 relative">
-                      <img 
-                        src={getTeaImage(category.name)} 
-                        alt={recipe.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                        <IconComponent className="h-3 w-3" />
-                        {category.name}
-                      </div>
-                    </div>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg leading-tight">{recipe.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {recipe.duration_min} min
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Droplets className="h-4 w-4" />
-                          {recipe.temperature}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {recipe.benefits}
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-        ))}
+        {categories.map(category => {
+          const hasAccess = hasAccessToCategory(category.id);
+          const categoryRecipes = getRecipesForCategory(category.id);
+          
+          return (
+            <TabsContent key={category.id} value={category.id} className="mt-0">
+              {hasAccess ? (
+                <>
+                  <div className="mb-6 p-4 bg-card rounded-lg border">
+                    <h2 className="text-xl font-semibold mb-2">{category.name}</h2>
+                    <p className="text-muted-foreground">{category.description}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {categoryRecipes.map(recipe => {
+                      const IconComponent = categoryIcons[category.name as keyof typeof categoryIcons] || Leaf;
+                      
+                      return (
+                        <Card key={recipe.id} className="cursor-pointer hover:shadow-lg transition-shadow overflow-hidden"
+                              onClick={() => setSelectedRecipe(recipe)}>
+                          <div className="w-full h-32 relative">
+                            <img 
+                              src={getTeaImage(category.name)} 
+                              alt={recipe.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                            <div className="absolute top-2 left-2 bg-black/50 text-white px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                              <IconComponent className="h-3 w-3" />
+                              {category.name}
+                            </div>
+                          </div>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-lg leading-tight">{recipe.title}</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {recipe.duration_min} min
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Droplets className="h-4 w-4" />
+                                {recipe.temperature}
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {recipe.benefits}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <SubscriptionContentGate
+                  requiredTier="premium"
+                  title={`Acesso Premium Necessário`}
+                  description={`Esta categoria de chás está disponível apenas para assinantes Premium ou superiores. Faça upgrade do seu plano para acessar todas as receitas de ${category.name}.`}
+                />
+              )}
+            </TabsContent>
+          );
+        })}
       </Tabs>
 
       {/* Recipe Detail Dialog */}

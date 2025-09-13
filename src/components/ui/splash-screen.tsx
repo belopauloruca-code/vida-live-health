@@ -30,8 +30,8 @@ export const SplashScreen: React.FC = () => {
         <div className="mb-6 flex justify-center">
           <div className="relative">
             <img 
-              src="/logo-splash-1024.png" 
-              alt="Vida Leve - Powered by Lovable AI" 
+              src="/lovable-uploads/light-life-splash.png" 
+              alt="Light Life - Powered by Lovable AI" 
               className="w-32 h-32 object-contain drop-shadow-2xl animate-scale-in"
             />
             <div className="absolute -inset-2 bg-white/20 rounded-full blur-xl animate-pulse" />

@@ -175,7 +175,11 @@ export const DashboardPage: React.FC = () => {
       backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${dashboardHeroBg})`
     }}>
         <div className="absolute inset-0 flex items-center justify-center px-4">
-          
+          <img 
+            src="/lovable-uploads/dashboard-image.png" 
+            alt="Light Life Dashboard" 
+            className="w-24 h-24 object-contain"
+          />
         </div>
       </div>
 
