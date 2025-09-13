@@ -171,17 +171,7 @@ export const DashboardPage: React.FC = () => {
   const cupsDrunk = Math.floor(hydrationToday / 250);
   return <div className="min-h-screen bg-background pb-safe-bottom-nav">
       {/* Hero Cover Section */}
-      <div className="relative h-40 sm:h-48 md:h-56 bg-cover bg-center bg-no-repeat" style={{
-      backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1)), url(${dashboardHeroBg})`
-    }}>
-        <div className="absolute inset-0 flex items-center justify-center px-4">
-          <img 
-            src="/lovable-uploads/dashboard-image.png" 
-            alt="Light Life Dashboard" 
-            className="w-24 h-24 object-contain"
-          />
-        </div>
-      </div>
+      
 
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
